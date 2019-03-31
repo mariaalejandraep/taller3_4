@@ -1,243 +1,162 @@
 #!/usr/bin/env python
 import rospy
-import threading
-from pynput.keyboard import Key, Listener
 from pacman.msg import pacmanPos
 from pacman.srv import mapService
 from pacman.msg import actions
+from pacman.msg import cookiesPos
+import numpy as np
+class Queue:
+    def __init__(self):
+        self.items = []
 
-msg0 = actions()
-msg1 = actions()
-msgAnterior = actions()
+    def isEmpty(self):
+        return self.items == []
 
-msg0.action = 0
-msg1.action = -1
-msgAnterior.action = -1
+    def enqueue(self, item):
+        self.items.insert(0,item)
 
-noMovio = None
-rescatar = False
+    def dequeue(self):
+        return self.items.pop()
 
-obstaculos = []
-anterior=-1
+    def size(self):
+        return len(self.items)
+class Stack:
+     def __init__(self):
+         self.items = []
+
+     def isEmpty(self):
+         return self.items == []
+
+     def push(self, item):
+         self.items.append(item)
+
+     def pop(self):
+         return self.items.pop()
+
+     def peek(self):
+         return self.items[len(self.items)-1]
+
+     def size(self):
+         return len(self.items)
+
+msg = actions()
+msg.action = 0
+
+
+obs = []
+
 h=1/0.15
-
+co=cookiesPos()
 mapa = None
+q=Queue()
+ruta=Stack()
+pos=[]
+posicionPacmanX = 0
+posicionPacmanY = 0
+posicionCj=0
+posicionCi=0
+tamanioC=0
+pos1=0
+pos2=0
+var=False
+done=False
 
-posicionPacman0X = 0
-posicionPacman0Y = 0
-posicionPacman1X = 0
-posicionPacman1Y = 0
+def BF (posactx,posacty,posGoalx,posGoalY):
+    global q
+    global ruta
+    global pos1
+    global pos2
+    q.enqueue(posactx)
+    q.enqueue(posacty)
+    while q.isEmpty()==False:
+        pos1=q.dequeue()
+        pos2=q.dequeue()
+        if posGoalx==pos1 and pos2==posGoalY:
+            ruta.push(pos1)
+            ruta.push(pos2)
+        if esValido(pos1+1,pos2):
+            q.enqueue(pos1+1)
+            q.enqueue(pos2)
+        if esValido(pos1,pos2+1):
+            q.enqueue(pos1)
+            q.enqueue(pos2+1)
+        if esValido(pos1-1,pos2):
+            q.enqueue(pos1-1)
+            q.enqueue(pos2)
+        if esValido(pos1,pos2-1):
+            q.enqueue(pos1)
+            q.enqueue(pos2-1)
+
+    return true
 
 
+
+
+def definirMovimiento():
+    rospy.loginfo("entro")
+    if BF(posicionPacmanX,posicionPacmanY,posicionCj,posicionCi)==true:
+        rospy.loginfo("entro2")
+        while ruta.isEmpty()==False:
+            rospy.loginfo("X : {}  Y : {}".format(ruta.pop(), ruta.pop()))
+    done=True
+def cookiesCallBack(co):
+	global posicionCj
+	global posicionCi
+	global tamanioC
+	tamanioC=co.nCookies
+	posicionCj=np.arange(tamanioC)
+	posicionCi=np.arange(tamanioC)
+
+	for xx in range (0,tamanioC):
+		posicionCj[xx]=co.cookiesPos[xx].x
+		posicionCi[xx]=co.cookiesPos[xx].y
+	pass
+
+
+def pacmanPosCallback(msg):
+    global posicionPacmanX
+    global posicionPacmanY
+
+
+
+    posicionPacmanX = msg.pacmanPos.x
+    posicionPacmanY = msg.pacmanPos.y
+    var=True
+
+#funcion que revisa si una posicion que entra como parametro es valida
 def esValido(actx,acty):
 	ret=True
-	for i in range (0,len(obstaculos)):
+	#recorre y compara la posicion con la posicon de todos los obstaculos de juego
+	for i in range (0,len(obs)):
 
-		if actx==obstaculos[i].x and acty==obstaculos[i].y:
+		if actx==obs[i].x and acty==obs[i].y:
 			ret=False
 	return ret
 
-def on_press(key):
-    global anterior
-
-    if key == Key.up:
-
-        if esValido(posicionPacman1X,posicionPacman1Y+1):
-            msg1.action=0
-        else:
-
-            anterior=0
-    if key == Key.down:
-		if esValido(posicionPacman1X,posicionPacman1Y-1):
-			msg1.action=1
-		else:
-			anterior=1
-    if key == Key.right:
-        if esValido(posicionPacman1X+1,posicionPacman1Y):
-
-            msg1.action=2
-        else:
-			anterior=2
-    if key == Key.left:
-        if esValido(posicionPacman1X-1,posicionPacman1Y):
-			msg1.action=3
-        else:
-            anterior=3
-
-def intentarAnterior():
-	global anterior
-	if anterior==0 and esValido(posicionPacman1X,posicionPacman1X+1):
-		msg1.action=0
-		anterior=-1
-	if anterior==1 and esValido(posicionPacman1X,posicionPacman1Y-1):
-		msg1.action=1
-		anterior=-1
-	if anterior==2 and esValido(posicionPacman1X+1,posicionPacman1Y):
-		msg1.action=2
-		anterior=-1
-	if anterior==3 and esValido(posicionPacman1X-1,posicionPacman1Y):
-		msg1.action=3
-		anterior=-1
-
-def on_release(key):
-	pass
-
-def ThreadInputs(): #Listener de Pynput en otro thread
-	with Listener(on_press=on_press, on_release=on_release) as listener:
-		listener.join()
-
-def empezarRescate(msg):
-    global posicionPacman0X
-    global posicionPacman0Y
-    global posicionPacman1X
-    global posicionPacman1Y
-    rospy.loginfo("posx0:{}".format(posicionPacman0X))
-    global rescatar
-    if abs(posicionPacman0X - posicionPacman1X)==0 and abs(posicionPacman0Y-posicionPacman1Y) == 0 and not rescatar:
-        global msgAnterior
-        msgAnterior.action = -1
-        rescatar = True
-
-def definirMovimiento():
-    global noMovio
-    if noMovio:
-        noMovio = False
-        if msg0.action == 0:
-            if not chequearPosicionDerecha():
-                msg0.action = 2
-            elif not chequearPosicionIzquierda():
-                msg0.action = 3
-            elif not chequearPosicionAbajo():
-                msg0.action = 1
-        elif msg0.action == 2:
-            if not chequearPosicionAbajo():
-                msg0.action = 1
-            elif not chequearPosicionArriba():
-                msg0.action = 0
-            elif not chequearPosicionIzquierda():
-                msg0.action = 3
-        elif msg0.action == 1:
-            if not chequearPosicionIzquierda():
-                msg0.action = 3
-            elif not chequearPosicionDerecha():
-                msg0.action = 2
-            elif not chequearPosicionArriba():
-                msg0.action = 0
-        elif msg0.action == 3:
-            if not chequearPosicionArriba():
-                msg0.action = 0
-            elif not chequearPosicionAbajo():
-                msg0.action = 1
-            elif not chequearPosicionDerecha():
-                msg0.action = 2
-    elif not noMovio == None:
-        if msg0.action == 0:
-            if not chequearPosicionDerecha():
-                msg0.action = 2
-        elif msg0.action == 1:
-            if not chequearPosicionIzquierda():
-                msg0.action = 3
-        elif msg0.action == 2:
-            if not chequearPosicionAbajo():
-                msg0.action = 1
-        elif msg0.action == 3:
-            if not chequearPosicionArriba():
-                msg0.action = 0
-
-def pacman0PosCallback(msg):
-    global posicionPacman0X
-    global posicionPacman0Y
-
-    if posicionPacman0Y == msg.pacmanPos.y and posicionPacman0X == msg.pacmanPos.x:
-        global noMovio
-        noMovio = True
-
-    posicionPacman0X = msg.pacmanPos.x
-    posicionPacman0Y = msg.pacmanPos.y
-
-def pacman1PosCallback(msg):
-    global posicionPacman1X
-    global posicionPacman1Y
-
-    posicionPacman1X = msg.pacmanPos.x
-    posicionPacman1Y = msg.pacmanPos.y
-    empezarRescate(msg)
-
-def chequearPosicionArriba():
-    i = 0
-    while i < mapa.nObs:
-        obstaculoChequeo = obstaculos[i]
-        if obstaculoChequeo.x == posicionPacman0X:
-            if obstaculoChequeo.y - 1 == posicionPacman0Y:
-                return True
-        i=i+1
-
-def chequearPosicionAbajo():
-    i = 0
-    while i < mapa.nObs:
-        obstaculoChequeo = obstaculos[i]
-        if obstaculoChequeo.x == posicionPacman0X:
-            if obstaculoChequeo.y + 1 == posicionPacman0Y:
-                return True
-        i=i+1
-
-def chequearPosicionDerecha():
-    i = 0
-    while i < mapa.nObs:
-        obstaculoChequeo = obstaculos[i]
-        if obstaculoChequeo.y == posicionPacman0Y:
-            if obstaculoChequeo.x - 1 == posicionPacman0X:
-                return True
-        i=i+1
-
-def chequearPosicionIzquierda():
-    i = 0
-    while i < mapa.nObs:
-        obstaculoChequeo = obstaculos[i]
-        if obstaculoChequeo.y == posicionPacman0Y:
-            if obstaculoChequeo.x + 1 == posicionPacman0X:
-                return True
-        i=i+1
 
 def pacman_controller_py():
     rospy.init_node('pacman_controller_py', anonymous=True)
-    rospy.Subscriber('pacmanCoord0', pacmanPos, pacman0PosCallback)
-    rospy.Subscriber('pacmanCoord1',pacmanPos, pacman1PosCallback)
-    pub0 = rospy.Publisher('pacmanActions0', actions, queue_size=10)
-    pub1 = rospy.Publisher('pacmanActions1', actions, queue_size=10)
-    threading.Thread(target=ThreadInputs).start()
+    rospy.Subscriber('pacmanCoord0', pacmanPos, pacmanPosCallback)
+    pub = rospy.Publisher('pacmanActions0', actions, queue_size=10)
+    rospy.Subscriber('cookiesCoord', cookiesPos,cookiesCallBack)
 
     try:
         mapRequestClient = rospy.ServiceProxy('pacman_world', mapService)
 
         global mapa
-        mapa = mapRequestClient("Grupo 4")
+        mapa = mapRequestClient("Grupo4")
 
-        global obstaculos
-        obstaculos = mapa.obs
+        global obs
+        obs = mapa.obs
 
         global h
 
-        rate = rospy.Rate(h)  # (1/0.15)Hz (Aproximadamente 6.666Hz)
+        rate = rospy.Rate(h)  # 6hz
 
         while not rospy.is_shutdown():
-            intentarAnterior()
-            global rescatar
-            global msgAnterior
-            global msg1
-            pub1.publish(msg1.action)
-            definirMovimiento()
-
-            if not rescatar:
-                pub0.publish(msg0.action)
-            else:
-                pub0.publish(msgAnterior.action)
-
-
-            rospy.loginfo("msg:{}".format(msg1.action))
-
-            msgAnterior.action=msg1.action
-
+            if (var==True  and done==False):
+                definirMovimiento()
+            pub.publish(msg.action)
             rate.sleep()
 
     except rospy.ServiceException as e:
