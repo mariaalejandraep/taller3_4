@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 
 
 
-
+#Variables tipo Twist
 #Es la variable en donde se almacena la posicion y orientacion actual del obstaculo 1.
 twistInfoPos = Twist()
 #Es la variable en donde se almacena la posicion y orientacion actual del obstaculo 2.
@@ -30,15 +30,23 @@ twistInfoPos5 = Twist()
 #Es la variable en donde se almacena la posicion y orientacion actual del obstaculo 5.
 twistInfoPioneer = Twist()
 
-#Almacena posiciones de coordenadas i
-Equivalente=None
 
-#Contador que inicializa funcion creadora de matriz
-yeta=0
+
+#ARRAYS
+#Almacena posiciones de coordenadas
+Equivalente=[]
+#ALmacena conexiones entre nodos
+Links=[]
+
+
+
+#CONTADORES
 #Contador creador de
+contador1=-1
 
-distanciaCuadricula=1
-n=10/distanciaCuadricula #Acordarse que 10 debe ser divisible por distanciaCuadricula
+
+distanciaCuadricula=0.5#Distancias entre cuadriculas de grafo
+n=int(10/distanciaCuadricula) #Acordarse que 10 debe ser divisible por distanciaCuadricula
 
 class Casilla:
     def __init__(self, xP, yP):
@@ -98,30 +106,56 @@ def setPosAndGeomP(posyGeo):
 
 
 def creadorMatriz():
-    global distanciaCuadricula, Equivalente, contador1,numeroCasillas, n
-    Equivalente=[]
+    global distanciaCuadricula, Equivalente, contador1,numeroCasillas, n, Links, mirar
     xInic=-5.0+np.divide(float(distanciaCuadricula),2.0)
     yInic=5.0-np.divide(float(distanciaCuadricula),2.0)
     for i in range(0,n*n):
-        mod=np.mod(i,n)
-        div=int(np.floor(i/n))
+        mod=np.mod(i,n)#columnas de la matriz
+        div=int(np.floor(i/n))#filas de la matriz
         if len(Equivalente)<div+1:
             Equivalente.append([])
         nuevaCasilla = Casilla(xInic+mod*distanciaCuadricula,yInic-div*distanciaCuadricula)
         Equivalente[div].append(nuevaCasilla)
-    print(Equivalente[9][9].x,Equivalente[9][9].y)
+
+    for h in range(0,n*n*n*n):
+
+        if contador1<n*n-1:
+            contador1=contador1+1
+            div2=int(np.floor((h)/(n*n)))
+        else:
+            contador1=0
+            div2=int(np.floor((h+1)/(n*n)))
+
+
+        if len(Links)<div2+1:
+            Links.append([])
+
+        if conexion(div2,contador1)==True:
+            Links[div2].append(1)
+        else:
+            Links[div2].append(0)
+
+
 
 def conexion(i,j):
-    global n
-    divi=int(np.floor(i,n))
-    divj=int(np.floor(j,n))
+    divi=int(np.math.floor(i/n))
+    divj=int(np.math.floor(j/n))
     modi=np.mod(i,n)
     modj=np.mod(j,n)
     dist=np.abs(divi-divj)+np.abs(modi-modj)
     if dist>1:
         return False
     else:
-        return True
+        disti_obst_0=math.sqrt(np.power(Equivalente[divi][modi].x-twistInfoPos.linear.x,2)+np.power(Equivalente[divi][modi].y-twistInfoPos.linear.y,2))
+
+        if (disti_obst_0)<(((twistInfoPos.linear.z)/2)+math.sqrt(np.power(distanciaCuadricula/2,2)+np.power(distanciaCuadricula/2,2))):
+            print "entro mk"
+            return False
+
+        else:
+            return True
+
+
 
 
 
