@@ -31,7 +31,7 @@ l = 0.19 #metros
 p = 0
 
 #Es un umbral que se define para indicarle al robot cuando llega al punto final.
-umbralP = 0.5
+umbralP = 0.4
 
 #Es una variable booleana que indica que el robot ha llegado al punto final.
 umbral = True
@@ -53,10 +53,10 @@ b = 0
 t = 0
 
 #Es la constante kp. Debe ser mayor que 0 para que el sistema sea localmente estable.
-kp = 0.02 # mayor que 0
+kp = 0.1 # mayor que 0 antes era 0.02
 
 #Es la constante ka. ka-kp debe ser mayor que 0 para que el sistema sea localmente estable.
-ka = 0.4 # ka-kp mayor que 0
+ka = 0.7 # ka-kp mayor que 0 antes era 0.4
 
 #Es la constante kb. Debe ser menor a 0 para que el sistema sea localmente estable.
 kb = -0.01 # menor que 0
@@ -125,8 +125,15 @@ contador_path=1
 
 
 Nodo_Inicial=0 #Nodo en donde esta ubicado pioneer
+
 Nodo_Final=0 #Nodo destino de pioneer final
-distanciaCuadricula=0.5 #Distancias entre cuadriculas de grafo
+
+posFinal_Fija=[]
+
+
+#DISTANCIA CUADRICULA
+distanciaCuadricula=0.25 #Distancias entre cuadriculas de grafo
+
 n=int(10/distanciaCuadricula) #Acordarse que 10 debe ser divisible por distanciaCuadricula
 
 
@@ -256,7 +263,7 @@ def calcularVelocidades():
 def calcularDistancia():
     global p,dx,dy,umbral,camino,Equivalente,contador_path,n
 
-    if umbral and contador_path<(len(camino)-1):
+    if umbral and contador_path<=(len(camino)-2):
         columna = np.mod(camino[contador_path],n)
         fila = int(np.floor(camino[contador_path]/n))
         posFinal[0] = Equivalente[fila][columna].x
@@ -265,6 +272,9 @@ def calcularDistancia():
         umbral = False
         print posFinal[0]
         print posFinal[1]
+    elif umbral and contador_path==(len(camino)-1): #Esto se realiza para que en su ultima etapa ignore el nodo final y vaya a la pos exacta que se pide
+        posFinal[0]=posFinal_Fija[0]
+        posFinal[1]=posFinal_Fija[1]
 
     dx = posFinal[0]-posActual[0]
     dy = posFinal[1]-posActual[1]
@@ -302,6 +312,8 @@ def creadorMatriz():
     global distanciaCuadricula, Equivalente,numeroCasillas, n, Links, g, Nodo_Inicial,Nodo_Final
     xInic=-5.0+np.divide(float(distanciaCuadricula),2.0)
     yInic=5.0-np.divide(float(distanciaCuadricula),2.0)
+    distVerdaderaA=float('Inf')
+    distVerdaderaB=float('Inf')
     for i in range(0,n*n):
         g.add_node(i)
         mod=np.mod(i,n)#columnas de la matriz
@@ -311,19 +323,19 @@ def creadorMatriz():
         coordenadax=xInic+mod*distanciaCuadricula
         coordenaday=yInic-div*distanciaCuadricula
         nuevaCasilla = Casilla(coordenadax,coordenaday)
-        dist_inicial_vs_dist_nodo=math.sqrt(np.power((posInicial[0]-coordenadax),2.0)+np.power((posInicial[1]-coordenaday),2.0)) #Distancia entre punto inicial y casilla actual
-        dist_final_vs_dist_nodo=math.sqrt(np.power((posFinal[0]-coordenadax),2.0)+np.power((posFinal[1]-coordenaday),2.0)) #Distancia entre punto final y casilla actual
-        dist_casilla_diagonal=float(math.sqrt(np.power(distanciaCuadricula/2.0,2.0)+np.power(distanciaCuadricula/2.0,2.0))) #Distancia diagonal de ina casilla
-        if dist_inicial_vs_dist_nodo <= dist_casilla_diagonal:
+        distanciaACasilla = math.sqrt(np.power(coordenadax-posInicial[0],2)+np.power(coordenaday-posInicial[1],2))
+        distanciaBCasilla = math.sqrt(np.power(coordenadax-posFinal[0],2)+np.power(coordenaday-posFinal[1],2))
+        if distVerdaderaA>distanciaACasilla:
             Nodo_Inicial=i
-
-        elif dist_final_vs_dist_nodo <= dist_casilla_diagonal:
+            distVerdaderaA=distanciaACasilla
+        if distVerdaderaB>distanciaBCasilla:
             Nodo_Final=i
+            distVerdaderaB=distanciaBCasilla
         Equivalente[div].append(nuevaCasilla)
     Graficador_network(Nodo_Inicial,Nodo_Final)
 
 
-def heuristica(i,j): #Metodo calcuala heuristica retorna distancia entre nodos
+def heuristica(i,j): #Metodo calcula heuristica retorna distancia entre nodos
     divi=int(np.math.floor(i/n)) #fila en el que se encuentra nodo i
     divj=int(np.math.floor(j/n)) #Columna en la que se encuentra nodo j
     modi=np.mod(i,n) #columna de nodo i
@@ -341,7 +353,7 @@ def Graficador_network(nodoInicial,nodoFinal):
             div2=int(np.floor((h)/(n*n)))
         else:
             contador1=0
-            div2=int(np.floor((h+1)/(n*n)))
+            div2=int(np.floor((h+1)/(n*n))) # Saltarse la posicion 100
 
 
         if len(Links)<div2+1:
@@ -352,7 +364,6 @@ def Graficador_network(nodoInicial,nodoFinal):
             g.add_edge(div2,contador1)
         else:
             Links[div2].append(0)
-
     camino=A_estrella(nodoInicial,nodoFinal,g)
     MUEVETE=2
 
@@ -364,7 +375,7 @@ def A_estrella(nodoInicial,nodoFinal,g):
 
 def conexion(i,j):#como variables entran dos numeros relacionados con cada casilla
     divi=int(np.math.floor(i/n)) #fila en el que se encuentra nodo i
-    divj=int(np.math.floor(j/n)) #Columna en la que se encuentra nodo j
+    divj=int(np.math.floor(j/n)) #fila en la que se encuentra nodo j
     modi=np.mod(i,n) #columna de nodo i
     modj=np.mod(j,n) #columna de nodo j
     dist=np.abs(divi-divj)+np.abs(modi-modj)
@@ -372,26 +383,26 @@ def conexion(i,j):#como variables entran dos numeros relacionados con cada casil
         return False
     else:
         #Distancias limites a cada obstaculo
-        dist_limite_1=((twistInfoPos1.linear.z))+math.sqrt(np.power(distanciaCuadricula/2.0,2.0)+np.power(distanciaCuadricula/2.0,2.0)) #Distancia limite a obstaculo 1
-        dist_limite_2=((twistInfoPos2.linear.z))+math.sqrt(np.power(distanciaCuadricula/2.0,2.0)+np.power(distanciaCuadricula/2.0,2.0)) #Distancia limite a obstaculo 2
-        dist_limite_3=((twistInfoPos3.linear.z))+math.sqrt(np.power(distanciaCuadricula/2.0,2.0)+np.power(distanciaCuadricula/2.0,2.0)) #Distancia limite a obstaculo 3
-        dist_limite_4=((twistInfoPos4.linear.z))+math.sqrt(np.power(distanciaCuadricula/2.0,2.0)+np.power(distanciaCuadricula/2.0,2.0)) #Distancia limite a obstaculo 4
-        dist_limite_5=((twistInfoPos5.linear.z))+math.sqrt(np.power(distanciaCuadricula/2.0,2.0)+np.power(distanciaCuadricula/2.0,2.0)) #Distancia limite a obstaculo 5
+        dist_limite_1=((twistInfoPos1.linear.z))+math.sqrt(np.power(distanciaCuadricula/2.0,2.0)+np.power(distanciaCuadricula/2.0,2.0))+2*l #Distancia limite a obstaculo 1
+        dist_limite_2=((twistInfoPos2.linear.z))+math.sqrt(np.power(distanciaCuadricula/2.0,2.0)+np.power(distanciaCuadricula/2.0,2.0))+2*l #Distancia limite a obstaculo 2
+        dist_limite_3=((twistInfoPos3.linear.z))+math.sqrt(np.power(distanciaCuadricula/2.0,2.0)+np.power(distanciaCuadricula/2.0,2.0))+2*l #Distancia limite a obstaculo 3
+        dist_limite_4=((twistInfoPos4.linear.z))+math.sqrt(np.power(distanciaCuadricula/2.0,2.0)+np.power(distanciaCuadricula/2.0,2.0))+2*l #Distancia limite a obstaculo 4
+        dist_limite_5=((twistInfoPos5.linear.z))+math.sqrt(np.power(distanciaCuadricula/2.0,2.0)+np.power(distanciaCuadricula/2.0,2.0))+2*l #Distancia limite a obstaculo 5
 
 
         #Distancias a obstaculos de casilla i considerando distancia limite
-        disti_obst_1=math.sqrt(np.power(Equivalente[divi][modi].x-twistInfoPos1.linear.x,2.0)+np.power(Equivalente[divi][modi].y-twistInfoPos1.linear.y,2.0))-dist_limite_1-2.0*l #Diferencia entre limite 1 y distancia de casilla i a obstaculo 1
-        disti_obst_2=math.sqrt(np.power(Equivalente[divi][modi].x-twistInfoPos2.linear.x,2.0)+np.power(Equivalente[divi][modi].y-twistInfoPos2.linear.y,2.0))-dist_limite_2-2.0*l #Diferencia entre limite 2 y distancia de casilla i a obstaculo 2
-        disti_obst_3=math.sqrt(np.power(Equivalente[divi][modi].x-twistInfoPos3.linear.x,2.0)+np.power(Equivalente[divi][modi].y-twistInfoPos3.linear.y,2.0))-dist_limite_3-2.0*l #Diferencia entre limite 3 y distancia de casilla i a obstaculo 3
-        disti_obst_4=math.sqrt(np.power(Equivalente[divi][modi].x-twistInfoPos4.linear.x,2.0)+np.power(Equivalente[divi][modi].y-twistInfoPos4.linear.y,2.0))-dist_limite_4-2.0*l #Diferencia entre limite 4 y distancia de casilla i a obstaculo 4
-        disti_obst_5=math.sqrt(np.power(Equivalente[divi][modi].x-twistInfoPos5.linear.x,2.0)+np.power(Equivalente[divi][modi].y-twistInfoPos5.linear.y,2.0))-dist_limite_5-2.0*l #Diferencia entre limite 5 y distancia de casilla i a obstaculo 5
+        disti_obst_1=math.sqrt(np.power(Equivalente[divi][modi].x-twistInfoPos1.linear.x,2.0)+np.power(Equivalente[divi][modi].y-twistInfoPos1.linear.y,2.0))-dist_limite_1 #Diferencia entre limite 1 y distancia de casilla i a obstaculo 1
+        disti_obst_2=math.sqrt(np.power(Equivalente[divi][modi].x-twistInfoPos2.linear.x,2.0)+np.power(Equivalente[divi][modi].y-twistInfoPos2.linear.y,2.0))-dist_limite_2 #Diferencia entre limite 2 y distancia de casilla i a obstaculo 2
+        disti_obst_3=math.sqrt(np.power(Equivalente[divi][modi].x-twistInfoPos3.linear.x,2.0)+np.power(Equivalente[divi][modi].y-twistInfoPos3.linear.y,2.0))-dist_limite_3 #Diferencia entre limite 3 y distancia de casilla i a obstaculo 3
+        disti_obst_4=math.sqrt(np.power(Equivalente[divi][modi].x-twistInfoPos4.linear.x,2.0)+np.power(Equivalente[divi][modi].y-twistInfoPos4.linear.y,2.0))-dist_limite_4 #Diferencia entre limite 4 y distancia de casilla i a obstaculo 4
+        disti_obst_5=math.sqrt(np.power(Equivalente[divi][modi].x-twistInfoPos5.linear.x,2.0)+np.power(Equivalente[divi][modi].y-twistInfoPos5.linear.y,2.0))-dist_limite_5 #Diferencia entre limite 5 y distancia de casilla i a obstaculo 5
 
         #Distancias a obstaculos de casilla j considerando distancia limite
-        distj_obst_1=math.sqrt(np.power(Equivalente[divj][modj].x-twistInfoPos1.linear.x,2.0)+np.power(Equivalente[divj][modj].y-twistInfoPos1.linear.y,2.0))-dist_limite_1-2.0*l #Diferencia entre limite 1 y distancia de casilla j a obstaculo 1
-        distj_obst_2=math.sqrt(np.power(Equivalente[divj][modj].x-twistInfoPos2.linear.x,2.0)+np.power(Equivalente[divj][modj].y-twistInfoPos2.linear.y,2.0))-dist_limite_2-2.0*l #Diferencia entre limite 2 y distancia de casilla j a obstaculo 1
-        distj_obst_3=math.sqrt(np.power(Equivalente[divj][modj].x-twistInfoPos3.linear.x,2.0)+np.power(Equivalente[divj][modj].y-twistInfoPos3.linear.y,2.0))-dist_limite_3-2.0*l #Diferencia entre limite 3 y distancia de casilla j a obstaculo 1
-        distj_obst_4=math.sqrt(np.power(Equivalente[divj][modj].x-twistInfoPos4.linear.x,2.0)+np.power(Equivalente[divj][modj].y-twistInfoPos4.linear.y,2.0))-dist_limite_4-2.0*l #Diferencia entre limite 4 y distancia de casilla j a obstaculo 1
-        distj_obst_5=math.sqrt(np.power(Equivalente[divj][modj].x-twistInfoPos5.linear.x,2.0)+np.power(Equivalente[divj][modj].y-twistInfoPos5.linear.y,2.0))-dist_limite_5-2.0*l #Diferencia entre limite 5 y distancia de casilla j a obstaculo 1
+        distj_obst_1=math.sqrt(np.power(Equivalente[divj][modj].x-twistInfoPos1.linear.x,2.0)+np.power(Equivalente[divj][modj].y-twistInfoPos1.linear.y,2.0))-dist_limite_1 #Diferencia entre limite 1 y distancia de casilla j a obstaculo 1
+        distj_obst_2=math.sqrt(np.power(Equivalente[divj][modj].x-twistInfoPos2.linear.x,2.0)+np.power(Equivalente[divj][modj].y-twistInfoPos2.linear.y,2.0))-dist_limite_2 #Diferencia entre limite 2 y distancia de casilla j a obstaculo 1
+        distj_obst_3=math.sqrt(np.power(Equivalente[divj][modj].x-twistInfoPos3.linear.x,2.0)+np.power(Equivalente[divj][modj].y-twistInfoPos3.linear.y,2.0))-dist_limite_3 #Diferencia entre limite 3 y distancia de casilla j a obstaculo 1
+        distj_obst_4=math.sqrt(np.power(Equivalente[divj][modj].x-twistInfoPos4.linear.x,2.0)+np.power(Equivalente[divj][modj].y-twistInfoPos4.linear.y,2.0))-dist_limite_4 #Diferencia entre limite 4 y distancia de casilla j a obstaculo 1
+        distj_obst_5=math.sqrt(np.power(Equivalente[divj][modj].x-twistInfoPos5.linear.x,2.0)+np.power(Equivalente[divj][modj].y-twistInfoPos5.linear.y,2.0))-dist_limite_5 #Diferencia entre limite 5 y distancia de casilla j a obstaculo 1
 
         #Distancias minima a obstaculo
         dist_obst=np.amin([disti_obst_1,disti_obst_2,disti_obst_3,disti_obst_4,disti_obst_5,distj_obst_1,distj_obst_2,distj_obst_3,distj_obst_4,distj_obst_5])
@@ -420,6 +431,7 @@ if __name__ == '__main__':
                 pos2= float(sys.argv[2])
                 pos3= float(sys.argv[3])
                 posFinal = [pos1,pos2,pos3]
+                posFinal_Fija=[pos1,pos2,pos3]
             except ValueError:
                 pass
         punto2_a()
