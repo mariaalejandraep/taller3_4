@@ -67,6 +67,7 @@ minYre=0
 maxMapaY=0
 maxMapaX=0
 noLlego=999
+i=0
 a = [[False for x in range(maxMapaX+1)] for y in range(maxMapaY+1)]
 llegueEnX = [[noLlego for x in range(maxMapaX+1)] for y in range(maxMapaY+1)]
 llegueEnY= [[noLlego for x in range(maxMapaX+1)] for y in range(maxMapaY+1)]
@@ -118,11 +119,12 @@ def BF (posactx,posacty,posGoalx,posGoalY):
 
 
 def definirMovimiento():
-    rospy.loginfo("entro")
+
     global done
     global a
+    global posicionPacmanX,posicionPacmanY
     if BF(posicionPacmanX,posicionPacmanY,posicionCj[0],posicionCi[0])==True:
-        rospy.loginfo("entro2")
+
         global punto1
         punto1=posicionCj[0]
         global punto2
@@ -139,7 +141,7 @@ def definirMovimiento():
             ruta.push(punto2)
 
             #rospy.loginfo("punto1:{},punto2:{}".format(llegueEnX[punto1+(maxMapaX/2)-1][punto2+(maxMapaY/2)-1],llegueEnY[punto1+(maxMapaX/2)-1][punto2+(maxMapaY/2)-1]))
-            rospy.loginfo("puntoactualx:{},puntoactualy:{}".format(posicionPacmanX,posicionPacmanY))
+            #rospy.loginfo("puntoactualx:{},puntoactualy:{}".format(posicionPacmanX,posicionPacmanY))
 
 
 
@@ -151,7 +153,7 @@ def moverPacman():
     if not ruta.isEmpty():
         y=ruta.pop()
         x=ruta.pop()
-        rospy.loginfo("hola")
+
         rX= posicionPacmanX-x
         rY= posicionPacmanY-y
         rospy.loginfo("rX: {} y rY: {}".format(rX,rY))
@@ -162,11 +164,10 @@ def moverPacman():
         elif rY>0:
             msg.action=1
         elif rY<0:
-            rospy.loginfo("Llegue")
             msg.action=0
 
     else:
-      #  msg.action=-1
+        msg.action=-1
         pass
 
 def cookiesCallBack(co):
@@ -184,9 +185,7 @@ def cookiesCallBack(co):
 
 
 def pacmanPosCallback(msg):
-    global posicionPacmanX
-    global posicionPacmanY
-    global var
+    global posicionPacmanX, posicionPacmanY,var
 
     posicionPacmanX = msg.pacmanPos.x
     posicionPacmanY = msg.pacmanPos.y
@@ -222,7 +221,8 @@ def pacman_controller_py():
         global maxXre
         global maxYre
         global minXre
-        global minYre
+        global minYre, ruta, q
+        global i, var, done
         maxXre=mapa.maxX
         maxYre=mapa.maxY
         minXre= -1*maxXre
@@ -232,8 +232,8 @@ def pacman_controller_py():
         global obs
         obs = mapa.obs
 
-        global h
-        global a, llegueEnX,llegueEnY,noLlego
+        global h,tamanioC
+        global a, llegueEnX,llegueEnY,noLlego, posicionCi, posicionCj
         a = [[False for x in range(maxMapaY)] for y in range(maxMapaX)]
         llegueEnX = [[noLlego for x in range(maxMapaY)] for y in range(maxMapaX)]
         llegueEnY= [[noLlego for x in range(maxMapaY)] for y in range(maxMapaX)]
@@ -242,12 +242,31 @@ def pacman_controller_py():
         while not rospy.is_shutdown():
             if (var==True  and done==False):
                 definirMovimiento()
-            #pub.publish(0)
+                galletaActualX=posicionCj[0]
+                galletaActualY=posicionCi[0]
 
-            moverPacman()
 
-            pub.publish(msg.action)
 
+            if done:
+                moverPacman()
+                pub.publish(msg.action)
+                if posicionPacmanX==galletaActualX and posicionPacmanY==galletaActualY:
+                    done=False
+                    rospy.loginfo("aca")
+                    msg.action=-1
+                    #pub.publish(msg.action)
+                    a = [[False for x in range(maxMapaY)] for y in range(maxMapaX)]
+                    llegueEnX = [[noLlego for x in range(maxMapaY)] for y in range(maxMapaX)]
+                    llegueEnY= [[noLlego for x in range(maxMapaY)] for y in range(maxMapaX)]
+                    while ruta.isEmpty==False:
+                        ruta.pop()
+                    while q.isEmpty==False:
+                        q.dequeue
+                    var=True
+
+
+
+            #rospy.loginfo("posx:{},posy:{},Galletax:{},GalleyaY:{}".format(posicionPacmanX,posicionPacmanY,galletaActualX,galletaActualY))
             rate.sleep()
 
     except rospy.ServiceException as e:
