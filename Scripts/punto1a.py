@@ -221,7 +221,7 @@ def pacman_controller_py():
         global maxXre
         global maxYre
         global minXre
-        global minYre
+        global minYre, ruta, q
         global i, var, done
         maxXre=mapa.maxX
         maxYre=mapa.maxY
@@ -245,20 +245,27 @@ def pacman_controller_py():
                 galletaActualX=posicionCj[0]
                 galletaActualY=posicionCi[0]
 
-            moverPacman()
+
 
             if done:
-
+                moverPacman()
+                pub.publish(msg.action)
                 if posicionPacmanX==galletaActualX and posicionPacmanY==galletaActualY:
+                    done=False
                     rospy.loginfo("aca")
                     msg.action=-1
+                    #pub.publish(msg.action)
                     a = [[False for x in range(maxMapaY)] for y in range(maxMapaX)]
                     llegueEnX = [[noLlego for x in range(maxMapaY)] for y in range(maxMapaX)]
                     llegueEnY= [[noLlego for x in range(maxMapaY)] for y in range(maxMapaX)]
+                    while ruta.isEmpty==False:
+                        ruta.pop()
+                    while q.isEmpty==False:
+                        q.dequeue
                     var=True
-                    done=False
 
-            pub.publish(msg.action)
+
+
             #rospy.loginfo("posx:{},posy:{},Galletax:{},GalleyaY:{}".format(posicionPacmanX,posicionPacmanY,galletaActualX,galletaActualY))
             rate.sleep()
 
