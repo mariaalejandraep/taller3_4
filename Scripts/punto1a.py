@@ -147,7 +147,7 @@ def definirMovimiento():
 
 
 def moverPacman():
-    global x,y, posicionPacmanY,posicionPacmanX, msg
+    global x,y, posicionPacmanY,posicionPacmanX, msg,ruta
     if not ruta.isEmpty():
         y=ruta.pop()
         x=ruta.pop()
@@ -164,8 +164,10 @@ def moverPacman():
         elif rY<0:
             rospy.loginfo("Llegue")
             msg.action=0
+
     else:
-        msg.action=-1
+      #  msg.action=-1
+        pass
 
 def cookiesCallBack(co):
 	global posicionCj
@@ -240,8 +242,12 @@ def pacman_controller_py():
         while not rospy.is_shutdown():
             if (var==True  and done==False):
                 definirMovimiento()
+            #pub.publish(0)
+
             moverPacman()
+
             pub.publish(msg.action)
+
             rate.sleep()
 
     except rospy.ServiceException as e:
