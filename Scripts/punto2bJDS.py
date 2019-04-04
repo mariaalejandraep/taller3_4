@@ -118,7 +118,7 @@ def creadorArcos():
 
 
 def libre(xCas, yCas):# Si se encuentra un obstaculo en ella
-    distanciaCarro=0
+    distanciaCarro=0.544
     dist0 = math.sqrt ((twistInfoPos1.linear.x - xCas) ** 2 + (twistInfoPos1.linear.y - yCas) ** 2)
     dist1 = math.sqrt ((twistInfoPos2.linear.x - xCas) ** 2 + (twistInfoPos2.linear.y - yCas) ** 2)
     dist2 = math.sqrt ((twistInfoPos3.linear.x - xCas) ** 2 + (twistInfoPos3.linear.y - yCas) ** 2)

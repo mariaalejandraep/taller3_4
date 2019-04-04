@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import roslaunch
 import networkx as nx
 import matplotlib.pyplot as plt
+import time
 
 
 
@@ -24,14 +25,16 @@ diametroRueda = 195.3/1000#metros
 radioRueda = diametroRueda/2 #metros
 
 #Es la distancia entre el punto P y el eje de cada rueda.
-l = 0.19 #metros
+#l = math.sqrt(np.power(0.38/2,2)+np.power(0.51/2,2)) #metros
+l=0.38/2
+
 
 #Es la variable donde se almacena el valor de p (rho) que equivale
 #a la distancia entre el punto actual y el final.
 p = 0
 
 #Es un umbral que se define para indicarle al robot cuando llega al punto final.
-umbralP = 0.4
+umbralP = 0.3
 
 #Es una variable booleana que indica que el robot ha llegado al punto final.
 umbral = True
@@ -53,10 +56,10 @@ b = 0
 t = 0
 
 #Es la constante kp. Debe ser mayor que 0 para que el sistema sea localmente estable.
-kp = 0.1 # mayor que 0 antes era 0.02
+kp = 0.1 # mayor que 0 antes era 0.02, despues fue 0.1
 
 #Es la constante ka. ka-kp debe ser mayor que 0 para que el sistema sea localmente estable.
-ka = 0.7 # ka-kp mayor que 0 antes era 0.4
+ka = 0.5 # ka-kp mayor que 0 antes era 0.4, despues fue 0.7
 
 #Es la constante kb. Debe ser menor a 0 para que el sistema sea localmente estable.
 kb = -0.01 # menor que 0
@@ -108,8 +111,6 @@ twistInfoPioneer = Twist()
 #ARRAYS
 #Almacena posiciones de coordenadas
 Equivalente=[]
-#ALmacena conexiones entre nodos
-Links=[]
 
 
 
@@ -131,8 +132,18 @@ Nodo_Final=0 #Nodo destino de pioneer final
 posFinal_Fija=[]
 
 
+
+
+
+
+
 #DISTANCIA CUADRICULA
-distanciaCuadricula=0.25 #Distancias entre cuadriculas de grafo
+distanciaCuadricula=0.2 #Distancias entre cuadriculas de grafo
+
+
+
+
+
 
 n=int(10/distanciaCuadricula) #Acordarse que 10 debe ser divisible por distanciaCuadricula
 
@@ -159,6 +170,7 @@ def punto2_a():
     rospy.Subscriber('InfoObs4', Twist, setObst4)
     rospy.Subscriber('pioneerPosition', Twist, setPositionCallback) # Se subscribe al topico de posicion del robot
     rospy.Subscriber('simulationTime', Float32, actualizar)
+    time.sleep(0.5) # Espera a que se actualice informacion de todos los obstaculos
 
     #SE publica informacion en los siguientes topicos
     pubMot = rospy.Publisher('motorsVel', Float32MultiArray, queue_size=10)#Se publican velocidades de los motores.
@@ -184,30 +196,30 @@ def punto2_a():
 #FUNCIONES ANCLADAS A TOPICOS SUBSCRITOS
 #Info de obstaculo 1
 def setObst(posicionObstacle):
-    global twistInfoPos
+    global twistInfoPos1, siga_obs1
     twistInfoPos1=posicionObstacle
 
 #Info de obstaculo 2
 def setObst1(posicionObstacle):
-    global twistInfoPos2
+    global twistInfoPos2, sigaobs2
     twistInfoPos2=posicionObstacle
 
 
 #Info de obstaculo 3
 def setObst2(posicionObstacle):
-    global twistInfoPos3
+    global twistInfoPos3, sigaobs3
     twistInfoPos3=posicionObstacle
 #
 
 #Info de obstaculo 4
 def setObst3(posicionObstacle):
-    global twistInfoPos4
+    global twistInfoPos4, siga_obs4
     twistInfoPos4=posicionObstacle
 
 
 #Info de obstaculo 5
 def setObst4(posicionObstacle):
-    global twistInfoPos5
+    global twistInfoPos5, siga_obs5
     twistInfoPos5=posicionObstacle
 
 
@@ -261,7 +273,7 @@ def calcularVelocidades():
 #las distancias en el eje X y Y entre dichos puntos. Ademas, si p (rho) es menor al umbral definido se le indica al resto
 #del codigo que se llego al punto final.
 def calcularDistancia():
-    global p,dx,dy,umbral,camino,Equivalente,contador_path,n
+    global p,dx,dy,umbral,camino,Equivalente,contador_path,n,umbralP
 
     if umbral and contador_path<=(len(camino)-2):
         columna = np.mod(camino[contador_path],n)
@@ -275,6 +287,11 @@ def calcularDistancia():
     elif umbral and contador_path==(len(camino)-1): #Esto se realiza para que en su ultima etapa ignore el nodo final y vaya a la pos exacta que se pide
         posFinal[0]=posFinal_Fija[0]
         posFinal[1]=posFinal_Fija[1]
+        print posFinal[0]
+        print posFinal[1]
+        contador_path=contador_path+1
+        umbralP=0.05
+        umbral = False
 
     dx = posFinal[0]-posActual[0]
     dy = posFinal[1]-posActual[1]
@@ -300,8 +317,6 @@ def calcularAngulos():
         b = b-2*math.pi
     elif (b<-math.pi):
         b = 2+math.pi+b
-
-
 
 
 
@@ -345,25 +360,12 @@ def heuristica(i,j): #Metodo calcula heuristica retorna distancia entre nodos
 
 #Metodo que define la red sobre la cual se trabajara
 def Graficador_network(nodoInicial,nodoFinal):
-    global contador1,Links, g, n, MUEVETE,camino
-    for h in range(0,n*n*n*n):
+    global MUEVETE,camino
+    for i in range(0,n**2):
+        for j in range(i, n**2):
+            if j!=i and math.sqrt((i%n-j%n)**2 +(i//n-j//n)**2)<=math.sqrt(2) and conexion(Equivalente[i//n][i%n].x, Equivalente[i//n][i%n].y) and conexion(Equivalente[j//n][j%n].x, Equivalente[j//n][j%n].y):
+                g.add_edge(i,j)
 
-        if contador1<n*n-1:
-            contador1=contador1+1
-            div2=int(np.floor((h)/(n*n)))
-        else:
-            contador1=0
-            div2=int(np.floor((h+1)/(n*n))) # Saltarse la posicion 100
-
-
-        if len(Links)<div2+1:
-            Links.append([])
-
-        if conexion(div2,contador1)==True:
-            Links[div2].append(1)
-            g.add_edge(div2,contador1)
-        else:
-            Links[div2].append(0)
     camino=A_estrella(nodoInicial,nodoFinal,g)
     MUEVETE=2
 
@@ -373,46 +375,19 @@ def A_estrella(nodoInicial,nodoFinal,g):
     return path
 
 
-def conexion(i,j):#como variables entran dos numeros relacionados con cada casilla
-    divi=int(np.math.floor(i/n)) #fila en el que se encuentra nodo i
-    divj=int(np.math.floor(j/n)) #fila en la que se encuentra nodo j
-    modi=np.mod(i,n) #columna de nodo i
-    modj=np.mod(j,n) #columna de nodo j
-    dist=np.abs(divi-divj)+np.abs(modi-modj)
-    if dist>1:
-        return False
-    else:
-        #Distancias limites a cada obstaculo
-        dist_limite_1=((twistInfoPos1.linear.z))+math.sqrt(np.power(distanciaCuadricula/2.0,2.0)+np.power(distanciaCuadricula/2.0,2.0))+2*l #Distancia limite a obstaculo 1
-        dist_limite_2=((twistInfoPos2.linear.z))+math.sqrt(np.power(distanciaCuadricula/2.0,2.0)+np.power(distanciaCuadricula/2.0,2.0))+2*l #Distancia limite a obstaculo 2
-        dist_limite_3=((twistInfoPos3.linear.z))+math.sqrt(np.power(distanciaCuadricula/2.0,2.0)+np.power(distanciaCuadricula/2.0,2.0))+2*l #Distancia limite a obstaculo 3
-        dist_limite_4=((twistInfoPos4.linear.z))+math.sqrt(np.power(distanciaCuadricula/2.0,2.0)+np.power(distanciaCuadricula/2.0,2.0))+2*l #Distancia limite a obstaculo 4
-        dist_limite_5=((twistInfoPos5.linear.z))+math.sqrt(np.power(distanciaCuadricula/2.0,2.0)+np.power(distanciaCuadricula/2.0,2.0))+2*l #Distancia limite a obstaculo 5
-
-
-        #Distancias a obstaculos de casilla i considerando distancia limite
-        disti_obst_1=math.sqrt(np.power(Equivalente[divi][modi].x-twistInfoPos1.linear.x,2.0)+np.power(Equivalente[divi][modi].y-twistInfoPos1.linear.y,2.0))-dist_limite_1 #Diferencia entre limite 1 y distancia de casilla i a obstaculo 1
-        disti_obst_2=math.sqrt(np.power(Equivalente[divi][modi].x-twistInfoPos2.linear.x,2.0)+np.power(Equivalente[divi][modi].y-twistInfoPos2.linear.y,2.0))-dist_limite_2 #Diferencia entre limite 2 y distancia de casilla i a obstaculo 2
-        disti_obst_3=math.sqrt(np.power(Equivalente[divi][modi].x-twistInfoPos3.linear.x,2.0)+np.power(Equivalente[divi][modi].y-twistInfoPos3.linear.y,2.0))-dist_limite_3 #Diferencia entre limite 3 y distancia de casilla i a obstaculo 3
-        disti_obst_4=math.sqrt(np.power(Equivalente[divi][modi].x-twistInfoPos4.linear.x,2.0)+np.power(Equivalente[divi][modi].y-twistInfoPos4.linear.y,2.0))-dist_limite_4 #Diferencia entre limite 4 y distancia de casilla i a obstaculo 4
-        disti_obst_5=math.sqrt(np.power(Equivalente[divi][modi].x-twistInfoPos5.linear.x,2.0)+np.power(Equivalente[divi][modi].y-twistInfoPos5.linear.y,2.0))-dist_limite_5 #Diferencia entre limite 5 y distancia de casilla i a obstaculo 5
-
-        #Distancias a obstaculos de casilla j considerando distancia limite
-        distj_obst_1=math.sqrt(np.power(Equivalente[divj][modj].x-twistInfoPos1.linear.x,2.0)+np.power(Equivalente[divj][modj].y-twistInfoPos1.linear.y,2.0))-dist_limite_1 #Diferencia entre limite 1 y distancia de casilla j a obstaculo 1
-        distj_obst_2=math.sqrt(np.power(Equivalente[divj][modj].x-twistInfoPos2.linear.x,2.0)+np.power(Equivalente[divj][modj].y-twistInfoPos2.linear.y,2.0))-dist_limite_2 #Diferencia entre limite 2 y distancia de casilla j a obstaculo 1
-        distj_obst_3=math.sqrt(np.power(Equivalente[divj][modj].x-twistInfoPos3.linear.x,2.0)+np.power(Equivalente[divj][modj].y-twistInfoPos3.linear.y,2.0))-dist_limite_3 #Diferencia entre limite 3 y distancia de casilla j a obstaculo 1
-        distj_obst_4=math.sqrt(np.power(Equivalente[divj][modj].x-twistInfoPos4.linear.x,2.0)+np.power(Equivalente[divj][modj].y-twistInfoPos4.linear.y,2.0))-dist_limite_4 #Diferencia entre limite 4 y distancia de casilla j a obstaculo 1
-        distj_obst_5=math.sqrt(np.power(Equivalente[divj][modj].x-twistInfoPos5.linear.x,2.0)+np.power(Equivalente[divj][modj].y-twistInfoPos5.linear.y,2.0))-dist_limite_5 #Diferencia entre limite 5 y distancia de casilla j a obstaculo 1
-
-        #Distancias minima a obstaculo
-        dist_obst=np.amin([disti_obst_1,disti_obst_2,disti_obst_3,disti_obst_4,disti_obst_5,distj_obst_1,distj_obst_2,distj_obst_3,distj_obst_4,distj_obst_5])
-
-
-        if (dist_obst)<=(0.0):
-            return False
-
-        else:
-            return True
+def conexion(xCas,yCas):#como variables entran dos numeros relacionados con cada casilla
+    distanciaCarro=l
+    dist0 = math.sqrt ((twistInfoPos1.linear.x - xCas) ** 2 + (twistInfoPos1.linear.y - yCas) ** 2)
+    dist1 = math.sqrt ((twistInfoPos2.linear.x - xCas) ** 2 + (twistInfoPos2.linear.y - yCas) ** 2)
+    dist2 = math.sqrt ((twistInfoPos3.linear.x - xCas) ** 2 + (twistInfoPos3.linear.y - yCas) ** 2)
+    dist3 = math.sqrt ((twistInfoPos4.linear.x - xCas) ** 2 + (twistInfoPos4.linear.y - yCas) ** 2)
+    dist4 = math.sqrt ((twistInfoPos5.linear.x - xCas) ** 2 + (twistInfoPos5.linear.y - yCas) ** 2)
+    distRef0 = twistInfoPos1.linear.z/2 + distanciaCarro
+    distRef1 = twistInfoPos2.linear.z/2 + distanciaCarro
+    distRef2 = twistInfoPos3.linear.z/2 + distanciaCarro
+    distRef3 = twistInfoPos4.linear.z/2 + distanciaCarro
+    distRef4 = twistInfoPos5.linear.z/2 + distanciaCarro
+    return (dist0>=distRef0) and (dist1>=distRef1) and (dist2>=distRef2) and (dist3>=distRef3) and (dist4>=distRef4)
 
 
 
