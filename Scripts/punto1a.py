@@ -67,17 +67,19 @@ minYre=0
 maxMapaY=0
 maxMapaX=0
 noLlego=999
-i=0
+i=2
 a = [[False for x in range(maxMapaX+1)] for y in range(maxMapaY+1)]
 llegueEnX = [[noLlego for x in range(maxMapaX+1)] for y in range(maxMapaY+1)]
 llegueEnY= [[noLlego for x in range(maxMapaX+1)] for y in range(maxMapaY+1)]
 def BF (posactx,posacty,posGoalx,posGoalY):
+    rospy.loginfo("estoy calculando")
     global q
     global a
     global ruta
     global pos1
-    global pos2,llegueEnY,llegueEnX
-
+    global pos2,llegueEnY,llegueEnX,posicionPacmanX,posicionPacmanY
+    global retornar
+    retornar=False
     q.enqueue(posactx)
     q.enqueue(posacty)
 
@@ -87,6 +89,9 @@ def BF (posactx,posacty,posGoalx,posGoalY):
         pos1=q.dequeue()
         pos2=q.dequeue()
         a[pos1+(maxMapaX/2)-1][pos2+(maxMapaY/2)-1]=True
+        if pos1==posicionCj[i] and pos2==posicionCi[i]:
+            retornar=True
+            break
           
         if esValido(pos1+1,pos2):
             if (a[pos1+1+(maxMapaX/2)-1][pos2+(maxMapaY/2)-1]==False):
@@ -101,6 +106,7 @@ def BF (posactx,posacty,posGoalx,posGoalY):
                 llegueEnX[pos1+(maxMapaX/2)-1][pos2+1+(maxMapaY/2)-1]=pos1
                 llegueEnY[pos1+(maxMapaX/2)-1][pos2+1+(maxMapaY/2)-1]=pos2
         if esValido(pos1-1,pos2):
+            rospy.loginfo("pos1:{}".format(pos1-1))
             if (a[pos1-1+(maxMapaX/2)-1][pos2+(maxMapaY/2)-1]==False):
                 q.enqueue(pos1-1)
                 q.enqueue(pos2)
@@ -113,7 +119,8 @@ def BF (posactx,posacty,posGoalx,posGoalY):
                 llegueEnX[pos1+(maxMapaX/2)-1][pos2-1+(maxMapaY/2)-1]=pos1
                 llegueEnY[pos1+(maxMapaX/2)-1][pos2-1+(maxMapaY/2)-1]=pos2
 
-    return True
+    retornar=True
+    return retornar
 
 
 
@@ -122,13 +129,13 @@ def definirMovimiento():
 
     global done
     global a
-    global posicionPacmanX,posicionPacmanY
-    if BF(posicionPacmanX,posicionPacmanY,posicionCj[0],posicionCi[0])==True:
+    global posicionPacmanX,posicionPacmanY,i
+    if BF(posicionPacmanX,posicionPacmanY,posicionCj[i],posicionCi[i])==True:
 
         global punto1
-        punto1=posicionCj[0]
+        punto1=posicionCj[i]
         global punto2
-        punto2=posicionCi[0]
+        punto2=posicionCi[i]
         ruta.push(punto1)
         ruta.push(punto2)
 
@@ -140,8 +147,8 @@ def definirMovimiento():
             ruta.push(punto1)
             ruta.push(punto2)
 
-            #rospy.loginfo("punto1:{},punto2:{}".format(llegueEnX[punto1+(maxMapaX/2)-1][punto2+(maxMapaY/2)-1],llegueEnY[punto1+(maxMapaX/2)-1][punto2+(maxMapaY/2)-1]))
-            #rospy.loginfo("puntoactualx:{},puntoactualy:{}".format(posicionPacmanX,posicionPacmanY))
+            rospy.loginfo("punto1:{},punto2:{}".format(llegueEnX[punto1+(maxMapaX/2)-1][punto2+(maxMapaY/2)-1],llegueEnY[punto1+(maxMapaX/2)-1][punto2+(maxMapaY/2)-1]))
+            rospy.loginfo("puntoactualx:{},puntoactualy:{}".format(posicionPacmanX,posicionPacmanY))
 
 
 
@@ -149,14 +156,17 @@ def definirMovimiento():
 
 
 def moverPacman():
-    global x,y, posicionPacmanY,posicionPacmanX, msg,ruta
+    global x,y, posicionPacmanY,posicionPacmanX, msg,ruta,posicionCi,posicionCj
     if not ruta.isEmpty():
+
+        rospy.loginfo("hola")
         y=ruta.pop()
         x=ruta.pop()
 
         rX= posicionPacmanX-x
         rY= posicionPacmanY-y
         rospy.loginfo("rX: {} y rY: {}".format(rX,rY))
+        rospy.loginfo("X: {} y Y: {}".format(x,y))
         if rX>0:
             msg.action=3
         elif rX<0:
@@ -165,6 +175,7 @@ def moverPacman():
             msg.action=1
         elif rY<0:
             msg.action=0
+
 
     else:
         msg.action=-1
@@ -194,8 +205,8 @@ def pacmanPosCallback(msg):
 #funcion que revisa si una posicion que entra como parametro es valida
 def esValido(actx,acty):
     ret=True
-	#recorre y compara la posicion con la posicon de todos los obstaculos de jueg
-    if actx>maxXre or acty>maxYre or actx<minXre or acty<minYre:
+	#recorre y compara la posicion con la posicion de todos los obstaculos del juego
+    if actx>=maxXre or acty>=maxYre or actx<=minXre or acty<=minYre:
         ret=False
     else:
         for i in range (0,len(obs)):
@@ -220,7 +231,7 @@ def pacman_controller_py():
         global maxMapaY
         global maxXre
         global maxYre
-        global minXre
+        global minXre,h
         global minYre, ruta, q
         global i, var, done
         maxXre=mapa.maxX
@@ -232,7 +243,7 @@ def pacman_controller_py():
         global obs
         obs = mapa.obs
 
-        global h,tamanioC
+        global h,tamanioC,done
         global a, llegueEnX,llegueEnY,noLlego, posicionCi, posicionCj
         a = [[False for x in range(maxMapaY)] for y in range(maxMapaX)]
         llegueEnX = [[noLlego for x in range(maxMapaY)] for y in range(maxMapaX)]
@@ -242,8 +253,8 @@ def pacman_controller_py():
         while not rospy.is_shutdown():
             if (var==True  and done==False):
                 definirMovimiento()
-                galletaActualX=posicionCj[0]
-                galletaActualY=posicionCi[0]
+                galletaActualX=posicionCj[i]
+                galletaActualY=posicionCi[i]
 
 
 
