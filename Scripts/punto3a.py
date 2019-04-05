@@ -13,7 +13,6 @@ vel = 10
 msg = Float32MultiArray()
 msg.data = [vel, vel]
 twistInfo = Twist()
-scannerInfo = Twist()
 fig = None
 axs = None
 xCord = []
@@ -46,7 +45,6 @@ def robot_controller():
     global msg, twistInfo
     rospy.init_node('robot_controller', anonymous=True)
     rospy.Subscriber('pioneerPosition', Twist, setPositionCallback)
-    rospy.Subscriber('scanner', Float32MultiArray, puntosScanner)
     pub = rospy.Publisher('motorsVel', Float32MultiArray, queue_size=10)
     pubPosicion = rospy.Publisher('topico_Posicion', Twist, queue_size=10)
     threading.Thread(target=ThreadInputs).start()
@@ -65,10 +63,6 @@ def setPositionCallback(pos):
     global twistInfo
     twistInfo = pos
 
-def puntosScanner(puntos):
-    global scannerInfo
-    scannerInfo = puntos
-
 if __name__ == '__main__':
     try:
         if len(sys.argv) > 1:
@@ -78,5 +72,6 @@ if __name__ == '__main__':
             except ValueError:
                 pass
         robot_controller()
+        os.system('rosrun taller3_4 graficador3.py')
     except rospy.ROSInterruptException:
         pass
