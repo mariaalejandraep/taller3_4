@@ -12,10 +12,11 @@ import sys
 import matplotlib.pyplot as plt
 import roslaunch
 import networkx as nx
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt1
 import time
 
-
+#l = math.sqrt(np.power(0.38/2,2)+np.power(0.51/2,2)) #metros
+l=0.4/2
 # Iniciar grafico de networkx
 g=nx.Graph()
 # Variables tipo Twist
@@ -118,7 +119,7 @@ def creadorArcos():
 
 
 def libre(xCas, yCas):# Si se encuentra un obstaculo en ella
-    distanciaCarro=0.544
+    distanciaCarro=l
     dist0 = math.sqrt ((twistInfoPos1.linear.x - xCas) ** 2 + (twistInfoPos1.linear.y - yCas) ** 2)
     dist1 = math.sqrt ((twistInfoPos2.linear.x - xCas) ** 2 + (twistInfoPos2.linear.y - yCas) ** 2)
     dist2 = math.sqrt ((twistInfoPos3.linear.x - xCas) ** 2 + (twistInfoPos3.linear.y - yCas) ** 2)
@@ -146,7 +147,7 @@ def imprimirCasillasTerminal():
             fila=""
 
 def visualizacionGrafica():
-    global n
+    global n, f1
     xLibres = []
     yLibres = []
     xOcupadas = []
@@ -161,6 +162,10 @@ def visualizacionGrafica():
     plt.plot(xLibres, yLibres, 'ro')
     plt.plot(xOcupadas, yOcupadas, 'bo')
     plt.show()
+    plt.clf()
+    nx.draw(g,with_labels=True)
+    plt.show()
+
 
 
 

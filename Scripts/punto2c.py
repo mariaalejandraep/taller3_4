@@ -26,7 +26,7 @@ radioRueda = diametroRueda/2 #metros
 
 #Es la distancia entre el punto P y el eje de cada rueda.
 #l = math.sqrt(np.power(0.38/2,2)+np.power(0.51/2,2)) #metros
-l=0.38/2
+l=0.4/2
 
 
 #Es la variable donde se almacena el valor de p (rho) que equivale
@@ -223,6 +223,10 @@ def setObst4(posicionObstacle):
     twistInfoPos5=posicionObstacle
 
 
+
+
+
+
 #BASADO EN TOPICO DE PUNTO ANTERIOS
 
 #Este metodo se llama cada vez que al topico simulationTime se le publica un nuevo dato.
@@ -250,9 +254,12 @@ def setPositionCallback(pos):
     posActual = [twistInfo.linear.x, twistInfo.linear.y, twistInfo.angular.z]
     twistInfo = pos
 
+
+
+
+
+
 #METODOS DE TALLER PASADO
-
-
 
 #Aqui se calculan las velocidades de los motores que mueven al robot.
 def calcularVelocidades():
@@ -321,6 +328,15 @@ def calcularAngulos():
 
 
 
+
+
+
+
+
+
+
+
+
 #METODOS PARA ESTE TALLER
 
 def creadorMatriz():
@@ -377,6 +393,7 @@ def A_estrella(nodoInicial,nodoFinal,g):
 
 def conexion(xCas,yCas):#como variables entran dos numeros relacionados con cada casilla
     distanciaCarro=l
+    distanciaCarro=l
     dist0 = math.sqrt ((twistInfoPos1.linear.x - xCas) ** 2 + (twistInfoPos1.linear.y - yCas) ** 2)
     dist1 = math.sqrt ((twistInfoPos2.linear.x - xCas) ** 2 + (twistInfoPos2.linear.y - yCas) ** 2)
     dist2 = math.sqrt ((twistInfoPos3.linear.x - xCas) ** 2 + (twistInfoPos3.linear.y - yCas) ** 2)
@@ -388,6 +405,7 @@ def conexion(xCas,yCas):#como variables entran dos numeros relacionados con cada
     distRef3 = twistInfoPos4.linear.z/2 + distanciaCarro
     distRef4 = twistInfoPos5.linear.z/2 + distanciaCarro
     return (dist0>=distRef0) and (dist1>=distRef1) and (dist2>=distRef2) and (dist3>=distRef3) and (dist4>=distRef4)
+
 
 
 

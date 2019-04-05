@@ -18,7 +18,8 @@ import matplotlib.pyplot as plt
 #Iniciar grafico de networkx
 g=nx.Graph()
 
-
+#l = math.sqrt(np.power(0.38/2,2)+np.power(0.51/2,2)) #metros
+l=0.4/2
 
 #Variables tipo Twist
 #Es la variable en donde se almacena la posicion y orientacion actual del obstaculo 1.
