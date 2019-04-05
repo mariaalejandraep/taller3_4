@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from geometry_msgs.msg import Twist
+from std_msgs.msg import Float32MultiArray
 
 
 fig = None
@@ -28,7 +29,9 @@ def animate(i): #Se anima la grafica en tiempo real y se ajustan parametros de l
     global axs, xCord, yCord, siga20
     axs.axes.set_xlim(-5, 5)
     axs.axes.set_ylim(-5, 5)
-    axs.plot(xCord, yCord)
+    axs.plot(xCord, yCord, 'yo' )
+    plt.plot(xLibres, yLibres, 'ro')
+    plt.plot(xOcupadas, yOcupadas, 'bo')
     plt.title('Posicion en tiempo real de Robot')
     plt.grid()
 
@@ -45,6 +48,16 @@ def graficar(): #metodo principal
 
 if __name__ == '__main__':
     try:
-        graficar()# Se
+        if len(sys.argv) > 1:
+            try:
+                global posFinal,xLibres,yLibres,xOcupadas
+                # lee los argumentos que acompanan el rosrun y los guarda como la posicion final
+                xLibres= float(sys.argv[1])
+                yLibres= float(sys.argv[2])
+                xOcupadas= float(sys.argv[3])
+                yOcupadas= float(sys.argv[4])
+            except ValueError:
+                pass
+        graficar()
     except rospy.ROSInterruptException:
         pass

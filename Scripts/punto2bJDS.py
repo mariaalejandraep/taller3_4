@@ -171,6 +171,7 @@ def visualizacionGrafica():
 
 if __name__ == '__main__':
     try:
+
         punto2_a()
     except rospy.ROSInterruptException:
         pass

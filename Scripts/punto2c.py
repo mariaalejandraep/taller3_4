@@ -175,13 +175,15 @@ def punto2_a():
     #SE publica informacion en los siguientes topicos
     pubMot = rospy.Publisher('motorsVel', Float32MultiArray, queue_size=10)#Se publican velocidades de los motores.
 
-    #Se ejectuta el graficador que permite graficar posicion del robot en tiempo real
-    package = 'taller3_4'
-    script = 'graficador_punto_2.py'
-    node = roslaunch.core.Node(package, script)
-    launch = roslaunch.scriptapi.ROSLaunch()
-    launch.start()
-    process = launch.launch(node)
+
+    if MUEVETE>1:
+        #Se ejectuta el graficador que permite graficar posicion del robot en tiempo real
+        package = 'taller3_4'
+        script = 'graficador_punto_2.py'
+        node = roslaunch.core.Node(package, script,remap_args=xLibres)
+        launch = roslaunch.scriptapi.ROSLaunch()
+        launch.start()
+        process = launch.launch(node)
 
 
 
@@ -363,6 +365,7 @@ def creadorMatriz():
             Nodo_Final=i
             distVerdaderaB=distanciaBCasilla
         Equivalente[div].append(nuevaCasilla)
+    visualizacionGrafica()
     Graficador_network(Nodo_Inicial,Nodo_Final)
 
 
@@ -406,7 +409,19 @@ def conexion(xCas,yCas):#como variables entran dos numeros relacionados con cada
     distRef4 = twistInfoPos5.linear.z/2 + distanciaCarro
     return (dist0>=distRef0) and (dist1>=distRef1) and (dist2>=distRef2) and (dist3>=distRef3) and (dist4>=distRef4)
 
-
+def visualizacionGrafica():
+    global n, xLibres,yLibres,xOcupadas,yOcupadas
+    xLibres = []
+    yLibres = []
+    xOcupadas = []
+    yOcupadas = []
+    for i in range(0, n**2):
+        if Equivalente[i//n][i%n].libre:
+            xLibres.append(Equivalente[i//n][i%n].x)
+            yLibres.append (Equivalente[i // n][i % n].y)
+        else:
+            xOcupadas.append (Equivalente[i // n][i % n].x)
+            yOcupadas.append (Equivalente[i // n][i % n].y)
 
 
 
