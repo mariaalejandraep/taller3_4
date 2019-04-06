@@ -388,7 +388,6 @@ def heuristica(i,j): #Metodo calcula heuristica retorna distancia entre nodos
 def Graficador_network(nodoInicial,nodoFinal):
     global MUEVETE,camino,Nodo_Actual, limite
     Nodo_Actual=nodoInicial
-
     while Nodo_Actual!=nodoFinal and w<limite:
         columna=np.mod(Nodo_Actual,n)#columnas de la matriz
         fila=int(np.floor(Nodo_Actual/n))#filas de la matriz
