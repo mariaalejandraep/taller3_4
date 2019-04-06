@@ -66,10 +66,6 @@ def punto2_a():
     global twistInfoDim, twistInfoPos
     rospy.init_node('punto2_a', anonymous=True)
     rospy.Subscriber('InfoObs0', Twist, setObst)
-    rospy.Subscriber('InfoObs1', Twist, setObst1)
-    rospy.Subscriber('InfoObs2', Twist, setObst2)
-    rospy.Subscriber('InfoObs3', Twist, setObst3)
-    rospy.Subscriber('InfoObs4', Twist, setObst4)
     rospy.Subscriber('pioneerPosition', Twist, setPosAndGeomP) # Se subscribe al topico de posicion del robot
     rate = rospy.Rate(10)
     creadorMatriz()
@@ -77,38 +73,22 @@ def punto2_a():
     while not rospy.is_shutdown():
         rate.sleep()
 
+
+
+#FUNCIONES ANCLADAS A TOPICOS SUBSCRITOS
 #Info de obstaculo 1
 def setObst(posicionObstacle):
-    global twistInfoPos
-    twistInfoPos1=posicionObstacle
-
-#Info de obstaculo 2
-def setObst1(posicionObstacle):
-    global twistInfoPos2
-    twistInfoPos2=posicionObstacle
-
-
-#Info de obstaculo 3
-def setObst2(posicionObstacle):
-    global twistInfoPos3
-    twistInfoPos3=posicionObstacle
-#
-
-#Info de obstaculo 4
-def setObst3(posicionObstacle):
-    global twistInfoPos4
-    twistInfoPos4=posicionObstacle
-
-
-#Info de obstaculo 5
-def setObst4(posicionObstacle):
-    global twistInfoPos5
-    twistInfoPos5=posicionObstacle
-
-#Info de pioneer
-def setPosAndGeomP(posyGeo):
-    global twistInfoPioneer, yeta
-    twistInfoPioneer=posyGeo
+    global twistInfoPos1, twistInfoPos2, twistInfoPos3, twistInfoPos4, twistInfoPos5
+    if posicionObstacle.angular.x==1:
+        twistInfoPos1=posicionObstacle
+    elif posicionObstacle.angular.x==2:
+        twistInfoPos2=posicionObstacle
+    elif posicionObstacle.angular.x==3:
+        twistInfoPos3=posicionObstacle
+    elif posicionObstacle.angular.x==4:
+        twistInfoPos4=posicionObstacle
+    elif posicionObstacle.angular.x==5:
+        twistInfoPos5=posicionObstacle
 
 
 def creadorMatriz():

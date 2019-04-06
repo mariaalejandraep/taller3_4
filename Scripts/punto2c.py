@@ -26,7 +26,7 @@ radioRueda = diametroRueda/2 #metros
 
 #Es la distancia entre el punto P y el eje de cada rueda.
 #l = math.sqrt(np.power(0.38/2,2)+np.power(0.51/2,2)) #metros
-l=0.4/2
+l=0.45/2
 
 
 #Es la variable donde se almacena el valor de p (rho) que equivale
@@ -66,8 +66,29 @@ kb = -0.01 # menor que 0
 
 #Es la variable utilizada para publicar en el topico motorsVel la velocidad de cada motor.
 mot = Float32MultiArray()
+
+
+#Vabiable utilizada para mandar posiciones de obstaculos y links
+Linksx=Float32MultiArray()
+#Vabiable utilizada para mandar posiciones de obstaculos y links
+Linksy=Float32MultiArray()
+#Vabiable utilizada para mandar posiciones de obstaculos y links
+Obsx=Float32MultiArray()
+#Vabiable utilizada para mandar posiciones de obstaculos y links
+Obsy=Float32MultiArray()
+
+
 #En esta se almacenan las velocidades de cada motor.
 mot.data = [0, 0]
+
+#Se almacenan valiarbles de obs y links
+Linksx.data=[]
+#Se almacenan valiarbles de obs y links
+Linksy.data=[]
+#Se almacenan valiarbles de obs y links
+Obsx.data=[]
+#Se almacenan valiarbles de obs y links
+Obsy.data=[]
 
 #Es la variable en donde se almacena la posicion y orientacion actual del robot.
 twistInfo = Twist()
@@ -138,7 +159,7 @@ posFinal_Fija=[]
 
 
 #DISTANCIA CUADRICULA
-distanciaCuadricula=0.2 #Distancias entre cuadriculas de grafo
+distanciaCuadricula=0.1 #Distancias entre cuadriculas de grafo
 
 
 
@@ -160,31 +181,29 @@ class Casilla:
 #En este metodo se inicializa el nodo, se suscribe a los topicos necesarios, se crea la variable
 #para publicar al topico de motorsVel y tambien se lanza el nodo encargado de graficar.
 def punto2_a():
-    global twistInfoDim, twistInfoPos, MUEVETE
-    rospy.init_node('punto2_a', anonymous=True)
+    global twistInfoDim, twistInfoPos, MUEVETE, Linksx,Linksy,Obsx,Obsy
+    rospy.init_node('punto2_c', anonymous=True)
 
     #Se subscribe a los siguientes topicos
     rospy.Subscriber('InfoObs0', Twist, setObst)#Topico que contiene informacion sobre obstaculo 1
-    rospy.Subscriber('InfoObs1', Twist, setObst1)
-    rospy.Subscriber('InfoObs2', Twist, setObst2)
-    rospy.Subscriber('InfoObs3', Twist, setObst3)
-    rospy.Subscriber('InfoObs4', Twist, setObst4)
     rospy.Subscriber('pioneerPosition', Twist, setPositionCallback) # Se subscribe al topico de posicion del robot
     rospy.Subscriber('simulationTime', Float32, actualizar)
     time.sleep(0.5) # Espera a que se actualice informacion de todos los obstaculos
 
     #SE publica informacion en los siguientes topicos
     pubMot = rospy.Publisher('motorsVel', Float32MultiArray, queue_size=10)#Se publican velocidades de los motores.
+    pubLibresx = rospy.Publisher('Libresx', Float32MultiArray,  queue_size=10)#Se publican velocidades de los motores.
+    pubLibresy = rospy.Publisher('Libresy', Float32MultiArray,  queue_size=10)#Se publican velocidades de los motores.
+    pubObsx = rospy.Publisher('Obsx', Float32MultiArray,  queue_size=10)#Se publican velocidades de los motores.
+    pubObsy = rospy.Publisher('Obsy', Float32MultiArray,  queue_size=10)#Se publican velocidades de los motores.
 
-    #Se ejectuta el graficador que permite graficar posicion del robot en tiempo real
-    print "hola"
-    package = 'taller3_4'
-    script = 'graficador_punto_2.py'
-    node = roslaunch.core.Node(package, script)
-    launch = roslaunch.scriptapi.ROSLaunch()
-    launch.start()
-    process = launch.launch(node)
-
+    #SE inicializa el nodo que grafica en tiempo real
+    #package = 'taller2_4'
+    #script = 'graficador_punto_3.py'
+    #node = roslaunch.core.Node(package, script)
+    #launch = roslaunch.scriptapi.ROSLaunch()
+    #launch.start()
+    #process = launch.launch(node)
 
 
 
@@ -192,42 +211,30 @@ def punto2_a():
     rate = rospy.Rate(20)
     while not rospy.is_shutdown():
         pubMot.publish(mot)
-        rate.sleep()
+        pubLibresx.publish(Linksx)
+        pubLibresy.publish(Linksy)
+        pubObsx.publish(Obsx)
+        pubObsy.publish(Obsy)
 
+
+        rate.sleep()
 
 
 
 #FUNCIONES ANCLADAS A TOPICOS SUBSCRITOS
 #Info de obstaculo 1
 def setObst(posicionObstacle):
-    global twistInfoPos1, siga_obs1
-    twistInfoPos1=posicionObstacle
-
-#Info de obstaculo 2
-def setObst1(posicionObstacle):
-    global twistInfoPos2, sigaobs2
-    twistInfoPos2=posicionObstacle
-
-
-#Info de obstaculo 3
-def setObst2(posicionObstacle):
-    global twistInfoPos3, sigaobs3
-    twistInfoPos3=posicionObstacle
-#
-
-#Info de obstaculo 4
-def setObst3(posicionObstacle):
-    global twistInfoPos4, siga_obs4
-    twistInfoPos4=posicionObstacle
-
-
-#Info de obstaculo 5
-def setObst4(posicionObstacle):
-    global twistInfoPos5, siga_obs5
-    twistInfoPos5=posicionObstacle
-
-
-
+    global twistInfoPos1, twistInfoPos2, twistInfoPos3, twistInfoPos4, twistInfoPos5
+    if posicionObstacle.angular.x==1:
+        twistInfoPos1=posicionObstacle
+    elif posicionObstacle.angular.x==2:
+        twistInfoPos2=posicionObstacle
+    elif posicionObstacle.angular.x==3:
+        twistInfoPos3=posicionObstacle
+    elif posicionObstacle.angular.x==4:
+        twistInfoPos4=posicionObstacle
+    elif posicionObstacle.angular.x==5:
+        twistInfoPos5=posicionObstacle
 
 
 
@@ -408,19 +415,40 @@ def conexion(xCas,yCas):#como variables entran dos numeros relacionados con cada
     distRef4 = twistInfoPos5.linear.z/2 + distanciaCarro
     return (dist0>=distRef0) and (dist1>=distRef1) and (dist2>=distRef2) and (dist3>=distRef3) and (dist4>=distRef4)
 
+
+
+
 def visualizacionGrafica():
-    global n, xLibres,yLibres,xOcupadas,yOcupadas
+    global n, xLibres,yLibres,xOcupadas,yOcupadas,doIt, Linksx,Linksy,Obsx,Obsy
     xLibres = []
     yLibres = []
     xOcupadas = []
     yOcupadas = []
+    matriz_obs_links=[]
+    matriz_obs_links.append([])
+    matriz_obs_links.append([])
+    matriz_obs_links.append([])
+    matriz_obs_links.append([])
     for i in range(0, n**2):
         if Equivalente[i//n][i%n].libre:
             xLibres.append(Equivalente[i//n][i%n].x)
             yLibres.append (Equivalente[i // n][i % n].y)
+            matriz_obs_links[0].append(Equivalente[i//n][i%n].x)
+            matriz_obs_links[1].append(Equivalente[i // n][i % n].y)
+
         else:
             xOcupadas.append (Equivalente[i // n][i % n].x)
             yOcupadas.append (Equivalente[i // n][i % n].y)
+            matriz_obs_links[2].append(Equivalente[i // n][i % n].x)
+            matriz_obs_links[3].append(Equivalente[i // n][i % n].y)
+
+
+    Linksx.data=xLibres
+    Linksy.data=yLibres
+    Obsx.data=xOcupadas
+    Obsy.data=yOcupadas
+    print
+
 
 
 
