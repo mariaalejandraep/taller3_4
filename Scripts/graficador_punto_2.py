@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Float32MultiArray
+import sys
 
 
 fig = None
@@ -30,8 +31,6 @@ def animate(i): #Se anima la grafica en tiempo real y se ajustan parametros de l
     axs.axes.set_xlim(-5, 5)
     axs.axes.set_ylim(-5, 5)
     axs.plot(xCord, yCord, 'yo' )
-    plt.plot(xLibres, yLibres, 'ro')
-    plt.plot(xOcupadas, yOcupadas, 'bo')
     plt.title('Posicion en tiempo real de Robot')
     plt.grid()
 

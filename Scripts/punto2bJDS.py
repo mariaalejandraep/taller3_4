@@ -49,7 +49,7 @@ class Casilla:
 
 
 #En este metodo se inicializa el nodo, se suscribe a los topicos necesarios, se crea la variable
-#para publicar al topico de motorsVel y tambien se lanza el nodo encargado de graficar.
+#para publicar al topi    plt.plot(xLibres, yLibres, 'ro')
 def punto2_a():
     global twistInfoDim, twistInfoPos
 

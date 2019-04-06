@@ -150,16 +150,17 @@ n=int(10/distanciaCuadricula) #Acordarse que 10 debe ser divisible por distancia
 
 # Se crea una clase tipo casilla para cada casilla de division del mapa
 class Casilla:
-    def __init__(self, xP, yP):
+    def __init__(self, xP, yP, pE):
         self.x=float(xP)
         self.y=float(yP)
+        self .libre=pE
 
 
 
 #En este metodo se inicializa el nodo, se suscribe a los topicos necesarios, se crea la variable
 #para publicar al topico de motorsVel y tambien se lanza el nodo encargado de graficar.
 def punto2_a():
-    global twistInfoDim, twistInfoPos
+    global twistInfoDim, twistInfoPos, MUEVETE
     rospy.init_node('punto2_a', anonymous=True)
 
     #Se subscribe a los siguientes topicos
@@ -175,15 +176,16 @@ def punto2_a():
     #SE publica informacion en los siguientes topicos
     pubMot = rospy.Publisher('motorsVel', Float32MultiArray, queue_size=10)#Se publican velocidades de los motores.
 
+    #Se ejectuta el graficador que permite graficar posicion del robot en tiempo real
+    print "hola"
+    package = 'taller3_4'
+    script = 'graficador_punto_2.py'
+    node = roslaunch.core.Node(package, script)
+    launch = roslaunch.scriptapi.ROSLaunch()
+    launch.start()
+    process = launch.launch(node)
 
-    if MUEVETE>1:
-        #Se ejectuta el graficador que permite graficar posicion del robot en tiempo real
-        package = 'taller3_4'
-        script = 'graficador_punto_2.py'
-        node = roslaunch.core.Node(package, script,remap_args=xLibres)
-        launch = roslaunch.scriptapi.ROSLaunch()
-        launch.start()
-        process = launch.launch(node)
+
 
 
 
@@ -336,9 +338,6 @@ def calcularAngulos():
 
 
 
-
-
-
 #METODOS PARA ESTE TALLER
 
 def creadorMatriz():
@@ -355,7 +354,7 @@ def creadorMatriz():
             Equivalente.append([])
         coordenadax=xInic+mod*distanciaCuadricula
         coordenaday=yInic-div*distanciaCuadricula
-        nuevaCasilla = Casilla(coordenadax,coordenaday)
+        nuevaCasilla = Casilla(coordenadax,coordenaday, conexion(coordenadax,coordenaday))
         distanciaACasilla = math.sqrt(np.power(coordenadax-posInicial[0],2)+np.power(coordenaday-posInicial[1],2))
         distanciaBCasilla = math.sqrt(np.power(coordenadax-posFinal[0],2)+np.power(coordenaday-posFinal[1],2))
         if distVerdaderaA>distanciaACasilla:
