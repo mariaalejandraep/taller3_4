@@ -68,34 +68,19 @@ def punto2_a():
     # while not rospy.is_shutdown():
         #rate.sleep()
 
-#Info de obstaculo 1
+
 def setObst(posicionObstacle):
-    global twistInfoPos1
-    twistInfoPos1=posicionObstacle
-    # print twistInfoPos1,linear
-
-#Info de obstaculo 2
-def setObst1(posicionObstacle):
-    global twistInfoPos2
-    twistInfoPos2=posicionObstacle
-
-
-#Info de obstaculo 3
-def setObst2(posicionObstacle):
-    global twistInfoPos3
-    twistInfoPos3=posicionObstacle
-
-
-#Info de obstaculo 4
-def setObst3(posicionObstacle):
-    global twistInfoPos4
-    twistInfoPos4=posicionObstacle
-
-
-#Info de obstaculo 5
-def setObst4(posicionObstacle):
-    global twistInfoPos5
-    twistInfoPos5=posicionObstacle
+    global twistInfoPos1, twistInfoPos2, twistInfoPos3, twistInfoPos4, twistInfoPos5
+    if posicionObstacle.angular.x == 1 :
+        twistInfoPos1=posicionObstacle
+    elif posicionObstacle.angular.x == 2 :
+        twistInfoPos2=posicionObstacle
+    elif posicionObstacle.angular.x == 3 :
+        twistInfoPos3=posicionObstacle
+    elif posicionObstacle.angular.x == 4 :
+        twistInfoPos4=posicionObstacle
+    else:
+        twistInfoPos5=posicionObstacle
 
 
 def creadorVerticesCasillas():
@@ -148,7 +133,7 @@ def imprimirCasillasTerminal():
             fila=""
 
 def visualizacionGrafica():
-    global n, f1
+    global n
     xLibres = []
     yLibres = []
     xOcupadas = []
