@@ -87,13 +87,22 @@ def BF (posactx,posacty,posGoalx,posGoalY):
     #rospy.loginfo("posRealx:{}, posrealY:{}, posGalletaNueva:{}, posGallletaNuveay:{}".format(posicionPacmanX,posicionPacmanY,posicionCj[i],posicionCi[i]))
     #rospy.loginfo("difx:{},dify:{}".format(posactx,posacty) )
     retornar=False
+
     q.enqueue(posactx)
     q.enqueue(posacty)
+
+
+    global contador
+    contador = 0
 
     while q.isEmpty()==False:
 
         pos1=q.dequeue()
         pos2=q.dequeue()
+
+        if(contador<100):
+            contador = contador + 1
+            rospy.loginfo("BF: pos1:{} y pos2:{}".format(pos1,pos2))
 
         a[pos1+(maxMapaX/2)-1][pos2+(maxMapaY/2)-1]=True
         if pos1==posicionCj[i] and pos2==posicionCi[i]:
@@ -145,7 +154,11 @@ def definirMovimiento():
         ruta.push(punto1)
         ruta.push(punto2)
         cont=0
-        while (punto1 is not posicionPacmanX) and (punto2 is not posicionPacmanY):
+
+        rospy.loginfo("Galleta: x:{}, y:{}".format(punto1,punto2))
+        rospy.loginfo("Pacman: x:{}, y:{}".format(posicionPacmanX,posicionPacmanY))
+
+        while not (punto1 == posicionPacmanX and punto2 == posicionPacmanY):
             #global punto1,punto2,temp
             temp=punto1
             punto1= llegueEnX[punto1+(maxMapaX/2)-1][punto2+(maxMapaY/2)-1]
@@ -167,7 +180,6 @@ def moverPacman():
 
         y=ruta.pop()
         x=ruta.pop()
-
         rX= posicionPacmanX-x
         rY= posicionPacmanY-y
 
@@ -257,6 +269,7 @@ def pacman_controller_py():
 
             if done:
                 moverPacman()
+
                 pub.publish(msg.action)
                 if posicionPacmanX==galletaActualX and posicionPacmanY==galletaActualY:
                     done=False
