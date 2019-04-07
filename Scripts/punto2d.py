@@ -14,6 +14,7 @@ import roslaunch
 import networkx as nx
 import matplotlib.pyplot as plt
 import time
+import random
 
 
 
@@ -150,11 +151,11 @@ Nodo_Inicial=0 #Nodo en donde esta ubicado pioneer
 
 Nodo_Final=0 #Nodo destino de pioneer final
 
-posFinal_Fija=[]
+posFinal_Fija=[]# Fijha la posicion final sin importar los nodos
 
 
 
-
+limite=500
 
 
 
@@ -171,11 +172,11 @@ n=int(10/distanciaCuadricula) #Acordarse que 10 debe ser divisible por distancia
 
 # Se crea una clase tipo casilla para cada casilla de division del mapa
 class Casilla:
-    def __init__(self, xP, yP, pE):
+    def __init__(self, xP, yP, pE,valor):
         self.x=float(xP)
         self.y=float(yP)
         self .libre=pE
-
+        self .numero=valor
 
 
 #En este metodo se inicializa el nodo, se suscribe a los topicos necesarios, se crea la variable
@@ -361,7 +362,7 @@ def creadorMatriz():
             Equivalente.append([])
         coordenadax=xInic+mod*distanciaCuadricula
         coordenaday=yInic-div*distanciaCuadricula
-        nuevaCasilla = Casilla(coordenadax,coordenaday, conexion(coordenadax,coordenaday))
+        nuevaCasilla = Casilla(coordenadax,coordenaday, conexion(coordenadax,coordenaday),i)
         distanciaACasilla = math.sqrt(np.power(coordenadax-posInicial[0],2)+np.power(coordenaday-posInicial[1],2))
         distanciaBCasilla = math.sqrt(np.power(coordenadax-posFinal[0],2)+np.power(coordenaday-posFinal[1],2))
         if distVerdaderaA>distanciaACasilla:
@@ -385,11 +386,16 @@ def heuristica(i,j): #Metodo calcula heuristica retorna distancia entre nodos
 
 #Metodo que define la red sobre la cual se trabajara
 def Graficador_network(nodoInicial,nodoFinal):
-    global MUEVETE,camino
-    for i in range(0,n**2):
-        for j in range(i, n**2):
-            if j!=i and math.sqrt((i%n-j%n)**2 +(i//n-j//n)**2)<=math.sqrt(2) and conexion(Equivalente[i//n][i%n].x, Equivalente[i//n][i%n].y) and conexion(Equivalente[j//n][j%n].x, Equivalente[j//n][j%n].y):
-                g.add_edge(i,j)
+    global MUEVETE,camino,Nodo_Actual, limite
+    Nodo_Actual=nodoInicial
+    while Nodo_Actual!=nodoFinal and w<limite:
+        columna=np.mod(Nodo_Actual,n)#columnas de la matriz
+        fila=int(np.floor(Nodo_Actual/n))#filas de la matriz
+        vecinos=([Equivalente[fila-1][columna-1].numero,Equivalente[fila+1][columna+1].numero,Equivalente[fila][columna-1].numero,Equivalente[fila][columna+1].numero,Equivalente[fila-1][columna].numero,Equivalente[fila+1][columna].numero,Equivalente[fila-1][columna+1].numero,Equivalente[fila+1][columna-1].numero])
+        rand_nodo = random.choice(vecinos)
+        if j!=i and math.sqrt((i%n-j%n)**2 +(i//n-j//n)**2)<=math.sqrt(2) and conexion(Equivalente[i//n][i%n].x, Equivalente[i//n][i%n].y) and conexion(Equivalente[j//n][j%n].x, Equivalente[j//n][j%n].y):
+            g.add_edge(i,j)
+        w=w+1
 
     camino=A_estrella(nodoInicial,nodoFinal,g)
     MUEVETE=2
