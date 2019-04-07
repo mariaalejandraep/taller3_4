@@ -77,8 +77,15 @@ llegueEnY= [[noLlego for x in range(maxMapaX+1)] for y in range(maxMapaY+1)]
 
 def BF (posactx,posacty,posGoalx,posGoalY):
     #rospy.loginfo("estoy calculando")
-    global q,a,ruta,pos1,pos2,llegueEnY,llegueEnX,posicionPacmanX,posicionPacmanY,retornar
+    global q,a,ruta,pos1,pos2,llegueEnY,llegueEnX,posicionPacmanX,posicionPacmanY,retornar,maxMapaY,maxMapaX,noLlego
+    a = [[False for x in range(maxMapaY)] for y in range(maxMapaX)]
+    llegueEnX = [[noLlego for x in range(maxMapaY)] for y in range(maxMapaX)]
+    llegueEnY= [[noLlego for x in range(maxMapaY)] for y in range(maxMapaX)]
+    q=Queue()
+    ruta=Stack()
 
+    #rospy.loginfo("posRealx:{}, posrealY:{}, posGalletaNueva:{}, posGallletaNuveay:{}".format(posicionPacmanX,posicionPacmanY,posicionCj[i],posicionCi[i]))
+    #rospy.loginfo("difx:{},dify:{}".format(posactx,posacty) )
     retornar=False
     q.enqueue(posactx)
     q.enqueue(posacty)
@@ -88,10 +95,9 @@ def BF (posactx,posacty,posGoalx,posGoalY):
         pos1=q.dequeue()
         pos2=q.dequeue()
 
-        rospy.loginfo("Expandiendo. pos1:{} y pos2:{}".format(pos1,pos2))
-
         a[pos1+(maxMapaX/2)-1][pos2+(maxMapaY/2)-1]=True
         if pos1==posicionCj[i] and pos2==posicionCi[i]:
+
             retornar=True
             break
 
@@ -101,12 +107,14 @@ def BF (posactx,posacty,posGoalx,posGoalY):
                 q.enqueue(pos2)
                 llegueEnX[pos1+1+(maxMapaX/2)-1][pos2+(maxMapaY/2)-1]=pos1
                 llegueEnY[pos1+1+(maxMapaX/2)-1][pos2+(maxMapaY/2)-1]=pos2
+
         if esValido(pos1,pos2+1):
             if (a[pos1+(maxMapaX/2)-1][pos2+1+(maxMapaY/2)-1]==False):
                 q.enqueue(pos1)
                 q.enqueue(pos2+1)
                 llegueEnX[pos1+(maxMapaX/2)-1][pos2+1+(maxMapaY/2)-1]=pos1
                 llegueEnY[pos1+(maxMapaX/2)-1][pos2+1+(maxMapaY/2)-1]=pos2
+
         if esValido(pos1-1,pos2):
             if (a[pos1-1+(maxMapaX/2)-1][pos2+(maxMapaY/2)-1]==False):
                 q.enqueue(pos1-1)
@@ -128,7 +136,7 @@ def BF (posactx,posacty,posGoalx,posGoalY):
 
 def definirMovimiento():
 
-    global done, a, posicionPacmanX,posicionPacmanY,i,punto1,punto2,temp
+    global done, a, posicionPacmanX,posicionPacmanY,i,punto1,punto2,temp,posicionCi,posicionCj
 
     if BF(posicionPacmanX,posicionPacmanY,posicionCj[i],posicionCi[i])==True:
 
@@ -136,19 +144,21 @@ def definirMovimiento():
         punto2=posicionCi[i]
         ruta.push(punto1)
         ruta.push(punto2)
-
-        while punto1 is not posicionPacmanX and punto2 is not posicionPacmanY:
+        cont=0
+        while (punto1 is not posicionPacmanX) and (punto2 is not posicionPacmanY):
             #global punto1,punto2,temp
             temp=punto1
             punto1= llegueEnX[punto1+(maxMapaX/2)-1][punto2+(maxMapaY/2)-1]
             punto2= llegueEnY[temp+(maxMapaX/2)-1][punto2+(maxMapaY/2)-1]
             ruta.push(punto1)
             ruta.push(punto2)
+            cont=cont+1
 
             rospy.loginfo("punto1:{},punto2:{}".format(punto1,punto2))
             rospy.loginfo("puntoactualx:{},puntoactualy:{}".format(posicionPacmanX,posicionPacmanY))
-
+    rospy.loginfo(cont)
     done=True
+    rospy.loginfo("sali de aca")
 
 
 def moverPacman():
@@ -160,6 +170,7 @@ def moverPacman():
 
         rX= posicionPacmanX-x
         rY= posicionPacmanY-y
+
 
         #rospy.loginfo("rX: {} y rY: {}".format(rX,rY))
         #rospy.loginfo("X: {} y Y: {}".format(x,y))
@@ -201,11 +212,11 @@ def pacmanPosCallback(msg):
 def esValido(actx,acty):
     ret=True
 	#recorre y compara la posicion con la posicion de todos los obstaculos del juego
-    if actx>=maxXre or acty>=maxYre or actx<=minXre or acty<=minYre:
+    if actx>=maxXre or acty>=maxYre or actx<minXre or acty<minYre:
         ret=False
     else:
-        for i in range (0,len(obs)):
-            if actx==obs[i].x and acty==obs[i].y:
+        for w in range (0,len(obs)):
+            if actx==obs[w].x and acty==obs[w].y:
                 ret=False
 
     return ret
@@ -252,14 +263,16 @@ def pacman_controller_py():
                     rospy.loginfo("aca")
                     msg.action=-1
                     #pub.publish(msg.action)
+
+                    while ruta.isEmpty==False:
+                        ruta.pop()
+
+                    while q.isEmpty==False:
+                        q.dequeue
                     a = [[False for x in range(maxMapaY)] for y in range(maxMapaX)]
                     llegueEnX = [[noLlego for x in range(maxMapaY)] for y in range(maxMapaX)]
                     llegueEnY= [[noLlego for x in range(maxMapaY)] for y in range(maxMapaX)]
-                    while ruta.isEmpty==False:
-                        ruta.pop()
-                    while q.isEmpty==False:
-                        q.dequeue
-                    var=True
+
 
 
 
