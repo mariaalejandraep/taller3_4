@@ -14,6 +14,7 @@ import roslaunch
 import networkx as nx
 import matplotlib.pyplot as plt1
 import time
+import random
 
 #l = math.sqrt(np.power(0.38/2,2)+np.power(0.51/2,2)) #metros
 l=0.4/2
@@ -30,6 +31,8 @@ twistInfoPos3 = Twist()
 twistInfoPos4 = Twist()
 # Es la variable en donde se almacena la posicion y orientacion actual del obstaculo 5.
 twistInfoPos5 = Twist()
+# Es la variable en donde se almacena la posicion y orientacion actual del obstaculo 5.
+twistInfoPioneer = Twist()
 # ARRAYS
 # Almacena posiciones de coordenadas
 Equivalente=[]
@@ -38,25 +41,30 @@ distanciaCuadricula = 0.25
 # Numero de cuadriculas de la escena seleccionada
 n=int(10/distanciaCuadricula)
 
+
+casillasRRT = []
+
+xDescartados = []
+yDescartados = []
+
 # Clase que representa una casilla, tiene ubicacion o punto que la define (mitad) y si un objeto la cubre o no.
 class Casilla:
-    def __init__(self, xP, yP, pE):
+    def __init__(self, xP, yP):
         self.x=float(xP)
         self.y=float(yP)
-        self.libre=pE
 
 
 #En este metodo se inicializa el nodo, se suscribe a los topicos necesarios, se crea la variable
 #para publicar al topi    plt.plot(xLibres, yLibres, 'ro')
 
-def punto2_a():
-    global twistInfoPos1, twistInfoPos2, twistInfoPos3, twistInfoPos4, twistInfoPos5
-
-    rospy.init_node('punto2_bJDS', anonymous=True)
+def punto2_d():
+    rospy.init_node('punto2_d', anonymous=True)
     rospy.Subscriber('InfoObs', Twist, setObst)
+    rospy.Subscriber ('pioneerPosition', Twist, setPositionCallback)
     time.sleep(2) # Espera a que se actualice informacion de todos los obstaculos
-    creadorVerticesCasillas()
-    creadorArcos()
+    RRT(twistInfoPioneer.linear.x, twistInfoPioneer.linear.y, -4, 4)
+    # creadorVerticesCasillas()
+    # creadorArcos()
     visualizacionGrafica()
     # rate = rospy.Rate(10)
     # while not rospy.is_shutdown():
@@ -77,25 +85,10 @@ def setObst(posicionObstacle):
         twistInfoPos5=posicionObstacle
 
 
-def creadorVerticesCasillas():
-    global distanciaCuadricula, Equivalente,numeroCasillas, n, Links, g
-    xInic=-5.0+np.divide(float(distanciaCuadricula),2.0)
-    yInic=5.0-np.divide(float(distanciaCuadricula),2.0)
-    for i in range(0,n*n):
-        g.add_node(i)
-        mod=np.mod(i,n)#columnas de la matriz
-        div=int(np.floor(i/n))#filas de la matriz
-        if len(Equivalente)<div+1:
-            Equivalente.append([])
-        nuevaCasilla = Casilla(xInic+mod*distanciaCuadricula,yInic-div*distanciaCuadricula, libre(xInic+mod*distanciaCuadricula,yInic-div*distanciaCuadricula) )
-        Equivalente[div].append(nuevaCasilla)
+def setPositionCallback(pos):
+    global  twistInfoPioneer
+    twistInfoPioneer = pos
 
-
-def creadorArcos():
-    for i in range(0,n**2):
-        for j in range(i, n**2):
-            if j!=i and math.sqrt((i%n-j%n)**2 +(i//n-j//n)**2)<=math.sqrt(2) and libre(Equivalente[i//n][i%n].x, Equivalente[i//n][i%n].y) and libre(Equivalente[j//n][j%n].x, Equivalente[j//n][j%n].y):
-                g.add_edge(i,j)
 
 
 def libre(xCas, yCas):# Si se encuentra un obstaculo en ella
@@ -113,39 +106,74 @@ def libre(xCas, yCas):# Si se encuentra un obstaculo en ella
     return (dist0>=distRef0) and (dist1>=distRef1) and (dist2>=distRef2) and (dist3>=distRef3) and (dist4>=distRef4)
 
 
-def imprimirCasillasTerminal():
-    global n,Equivalente
-    fila = ""
-    for i in range(0, n**2):
-        columna = i%n
-        if Equivalente[i//n][columna].libre:
-            fila = fila + "1"
+def RRT(xIni, yIni, xFin, yFin):
+    global g, distanciaCuadricula
+    g.add_node(0)
+    step = distanciaCuadricula
+    radioError = .25
+    casillasRRT.append(Casilla(xIni,yIni))
+    contador = 1
+    llego = False
+    while not llego and contador != 20000:
+        xAleatorio = random.randrange(-500,500,1)/100
+        yAleatorio = random.randrange(-500,500,1)/100
+        posCasillaCercana = posCasillaMasCercana(xAleatorio, yAleatorio)
+        xCercana = casillasRRT[posCasillaCercana].x
+        yCercana = casillasRRT[posCasillaCercana].y
+        teta = math.atan2((yAleatorio-yCercana),(xAleatorio-xCercana))
+        xPropuesto = xCercana + step * math.cos(teta)
+        yPropuesto = yCercana + step * math.sin(teta)
+        if libre(xPropuesto, yPropuesto):
+            g.add_node(contador)
+            casillasRRT.append(Casilla(xPropuesto, yPropuesto))
+            g.add_edge(posCasillaCercana,contador)
+            contador = contador + 1
+            if math.sqrt((xFin-xPropuesto)**2+(yFin-yPropuesto)**2)<=radioError:
+                llego = True
+            if contador%100==0:
+                print contador
         else:
-            fila = fila + "0"
-        if columna == n-1:
-            print(fila)
-            fila=""
+            xDescartados.append(xPropuesto)
+            yDescartados.append(yPropuesto)
+    print "Cantidad final de nodos: ",contador
+
+
+def posCasillaMasCercana(x, y):
+    global casillasRRT
+    distancia = float('Inf')
+    numCasilla = -1
+    for i in range(0, len(casillasRRT)):
+        casillaActual = casillasRRT[i]
+        distCasillaActual = math.sqrt((casillaActual.x-x)**2+(casillaActual.y-y)**2)
+        if distCasillaActual < distancia:
+            numCasilla = i
+            distancia = distCasillaActual
+    return numCasilla
 
 
 def visualizacionGrafica():
-    global n, g
-    xLibres = []
-    yLibres = []
-    xOcupadas = []
-    yOcupadas = []
-    for i in range(0, n**2):
-        if Equivalente[i//n][i%n].libre:
-            xLibres.append(Equivalente[i//n][i%n].x)
-            yLibres.append (Equivalente[i // n][i % n].y)
+    global casillasRRT, xDescartados, yDescartados, g
+    cordX = []
+    cordY = []
+    xPath = []
+    yPath = []
+    path = nx.astar_path(g, 0, len(casillasRRT)-1)
+    for i in range(0, len(casillasRRT)):
+        casillaActual = casillasRRT[i]
+        if i not in path:
+            cordX.append(casillaActual.x)
+            cordY.append(casillaActual.y)
         else:
-            xOcupadas.append (Equivalente[i // n][i % n].x)
-            yOcupadas.append (Equivalente[i // n][i % n].y)
-    plt.plot(xLibres, yLibres, 'ro')
-    plt.plot(xOcupadas, yOcupadas, 'bo')
+            xPath.append (casillaActual.x)
+            yPath.append (casillaActual.y)
+    plt.plot(cordX, cordY, 'bo')
+    plt.plot(xDescartados, yDescartados, 'ro')
+    plt.plot(xPath,yPath,'go')
     plt.show()
-    plt.clf()
-    nx.draw(g)
-    plt.show()
+    # plt.clf()
+    # nx.draw(g,with_labels=True)
+    # nx.draw(g)
+    # plt.show()
 
 
 
@@ -153,6 +181,6 @@ def visualizacionGrafica():
 if __name__ == '__main__':
     try:
 
-        punto2_a()
+        punto2_d()
     except rospy.ROSInterruptException:
         pass

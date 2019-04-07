@@ -14,15 +14,15 @@ import roslaunch
 import networkx as nx
 import matplotlib.pyplot as plt
 import time
+import random
 
 
 
 # Clase que representa una casilla, tiene ubicacion o punto que la define (mitad) y si un objeto la cubre o no.
 class Casilla:
-    def __init__(self, xP, yP, pE):
+    def __init__(self, xP, yP):
         self.x=float(xP)
         self.y=float(yP)
-        self.libre=pE
 
 
 class Posicion:
@@ -93,24 +93,25 @@ mot = Float32MultiArray()
 #En esta se almacenan las velocidades de cada motor.
 mot.data = [0, 0]
 
+
+casillasRRT = []
+
 #En este metodo se inicializa el nodo, se suscribe a los topicos necesarios, se crea la variable
 #para publicar al topico de motorsVel y tambien se lanza el nodo encargado de graficar.
-def punto2c_JDS():
-    global posicionActual, g, ruta, pubMot, arrivedP, p, umbralP, kp
+def punto2d_final():
+    global posicionActual, g, ruta, pubMot, arrivedP, p, umbralP, kp, posicionActual
     rospy.init_node('punto2_cJDS', anonymous=True)
     rospy.Subscriber ('InfoObs', Twist, setObst)
     rospy.Subscriber ('pioneerPosition', Twist, setPositionCallback)
     pubMot = rospy.Publisher ('motorsVel', Float32MultiArray, queue_size=10)
     time.sleep (.1)  # Espera a que se actualice informacion de todos los obstaculos
-    creadorVerticesCasillas()
-    creadorArcos()
-    ruta = nx.astar_path(g,numCasillas(posicionActual.x,posicionActual.y),numCasillas(posicionFinal.x,posicionFinal.y) , heuristic=heuristic)
-    teta = 0
+    RRT(posicionActual.x, posicionActual.y, posicionFinal.x, posicionFinal.y)
+    ruta = nx.astar_path(g,0, len(casillasRRT)-1 , heuristic=heuristic)
     if len(ruta)>1:
-        teta = math.atan2(casillas[ruta[1]].y-casillas[ruta[0]].y, casillas[ruta[1]].x-casillas[ruta[0]].x)
+        teta = math.atan2(casillasRRT[ruta[1]].y-casillasRRT[ruta[0]].y, casillasRRT[ruta[1]].x-casillasRRT[ruta[0]].x)
     else:
-        teta = math.atan2(posicionFinal.y-casillas[ruta[0]].y, posicionFinal.x-casillas[ruta[0]].x)
-    posInter = Posicion(casillas[ruta[0]].x, casillas[ruta[0]].y, teta)
+        teta = math.atan2(posicionFinal.y-casillasRRT[ruta[0]].y, posicionFinal.x-casillasRRT[ruta[0]].x)
+    posInter = Posicion(casillasRRT[ruta[0]].x, casillasRRT[ruta[0]].y, teta)
     iRuta = 0
     rate = rospy.Rate (10)
     fin = False
@@ -122,7 +123,7 @@ def punto2c_JDS():
                 arrivedP = False
                 posInter = posicionFinal
             elif iRuta < len(ruta)-1:
-                posInter = Posicion(casillas[ruta[iRuta+1]].x, casillas[ruta[iRuta+1]].y, math.atan2(casillas[ruta[iRuta+1]].y-casillas[ruta[iRuta]].y, casillas[ruta[iRuta+1]].x-casillas[ruta[iRuta]].x))
+                posInter = Posicion(casillasRRT[ruta[iRuta+1]].x, casillasRRT[ruta[iRuta+1]].y, math.atan2(casillasRRT[ruta[iRuta+1]].y-casillasRRT[ruta[iRuta]].y, casillasRRT[ruta[iRuta+1]].x-casillasRRT[ruta[iRuta]].x))
                 iRuta = iRuta + 1
                 arrivedP = False
                 print iRuta
@@ -131,7 +132,6 @@ def punto2c_JDS():
         calcularVelocidades(posInter)
         pubMot.publish(mot)
         rate.sleep()
-    print ("Salio")
     mot.data[0] = 0
     mot.data[1] = 0
     pubMot.publish (mot)
@@ -173,23 +173,47 @@ def setObst(posicionObstacle):
     else:
         twistInfoPos5=posicionObstacle
 
-def creadorVerticesCasillas():
-    global distanciaCuadricula, n
-    xInic=-5.0+distanciaCuadricula/2
-    yInic=5.0-distanciaCuadricula/2
-    for i in range(0,n*n):
-        g.add_node(i)
-        mod=np.mod(i,n)#columnas de la matriz
-        div=int(np.floor(i/n))#filas de la matriz
-        nC = Casilla(xInic+mod*distanciaCuadricula,yInic-div*distanciaCuadricula, libre(xInic+mod*distanciaCuadricula,yInic-div*distanciaCuadricula) )
-        casillas.append(nC)
+
+def RRT(xIni, yIni, xFin, yFin):
+    global g, distanciaCuadricula
+    g.add_node(0)
+    step = distanciaCuadricula
+    radioError = .25
+    casillasRRT.append(Casilla(xIni,yIni))
+    contador = 1
+    llego = False
+    while not llego and contador != 20000:
+        xAleatorio = random.randrange(-500,500,1)/100
+        yAleatorio = random.randrange(-500,500,1)/100
+        posCasillaCercana = posCasillaMasCercana(xAleatorio, yAleatorio)
+        xCercana = casillasRRT[posCasillaCercana].x
+        yCercana = casillasRRT[posCasillaCercana].y
+        teta = math.atan2((yAleatorio-yCercana),(xAleatorio-xCercana))
+        xPropuesto = xCercana + step * math.cos(teta)
+        yPropuesto = yCercana + step * math.sin(teta)
+        if libre(xPropuesto, yPropuesto):
+            g.add_node(contador)
+            casillasRRT.append(Casilla(xPropuesto, yPropuesto))
+            g.add_edge(posCasillaCercana,contador)
+            contador = contador + 1
+            if math.sqrt((xFin-xPropuesto)**2+(yFin-yPropuesto)**2)<=radioError:
+                llego = True
+            if contador%100==0:
+                print contador
+    print "Cantidad final de nodos: ",contador
 
 
-def creadorArcos():
-    for i in range(0,n**2):
-        for j in range(i, n**2):
-            if j!=i and math.sqrt((i%n-j%n)**2 +(i//n-j//n)**2)<=math.sqrt(2) and libre(casillas[i].x, casillas[i].y) and libre(casillas[j].x, casillas[j].y):
-                g.add_edge(i,j)
+def posCasillaMasCercana(x, y):
+    global casillasRRT
+    distancia = float('Inf')
+    numCasilla = -1
+    for i in range(0, len(casillasRRT)):
+        casillaActual = casillasRRT[i]
+        distCasillaActual = math.sqrt((casillaActual.x-x)**2+(casillaActual.y-y)**2)
+        if distCasillaActual < distancia:
+            numCasilla = i
+            distancia = distCasillaActual
+    return numCasilla
 
 
 def libre(xCas, yCas):# Si se encuentra un obstaculo en ella
@@ -255,6 +279,6 @@ if __name__ == '__main__':
                 posicionFinal.teta = float (sys.argv[3])
             except ValueError:
                 pass
-        punto2c_JDS()
+        punto2d_final()
     except rospy.ROSInterruptException:
         pass
