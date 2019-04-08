@@ -256,7 +256,7 @@ def pacman_controller_py():
         a = [[False for x in range(maxMapaY)] for y in range(maxMapaX)]
         llegueEnX = [[noLlego for x in range(maxMapaY)] for y in range(maxMapaX)]
         llegueEnY= [[noLlego for x in range(maxMapaY)] for y in range(maxMapaX)]
-        rate = rospy.Rate(h)  # 6hz
+        rate = rospy.Rate(h)  # 6.666Hz
 
         while not rospy.is_shutdown():
             if (var==True and done==False):
