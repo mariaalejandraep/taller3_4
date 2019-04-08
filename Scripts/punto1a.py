@@ -46,7 +46,7 @@ msg.action = -1
 
 obs = []
 
-h=1/0.15
+h=(1.0/0.15)
 co=cookiesPos()
 mapa = None
 q=Queue()
@@ -165,7 +165,6 @@ def definirMovimiento():
             punto2= llegueEnY[temp+(maxMapaX/2)-1][punto2+(maxMapaY/2)-1]
             ruta.push(punto1)
             ruta.push(punto2)
-            cont=cont+1
 
             rospy.loginfo("punto1:{},punto2:{}".format(punto1,punto2))
             rospy.loginfo("puntoactualx:{},puntoactualy:{}".format(posicionPacmanX,posicionPacmanY))
@@ -275,13 +274,14 @@ def pacman_controller_py():
                     done=False
                     rospy.loginfo("aca")
                     msg.action=-1
-                    #pub.publish(msg.action)
+                    pub.publish(msg.action)
 
-                    while ruta.isEmpty==False:
-                        ruta.pop()
+                    #while ruta.isEmpty==False:
+                    #    ruta.pop()
 
-                    while q.isEmpty==False:
-                        q.dequeue
+                    #while q.isEmpty==False:
+                    #    q.dequeue
+
                     a = [[False for x in range(maxMapaY)] for y in range(maxMapaX)]
                     llegueEnX = [[noLlego for x in range(maxMapaY)] for y in range(maxMapaX)]
                     llegueEnY= [[noLlego for x in range(maxMapaY)] for y in range(maxMapaX)]
