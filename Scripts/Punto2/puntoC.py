@@ -1,21 +1,10 @@
 #!/usr/bin/env python
 #Se importan las librerias necesarias junto con los mensajes a utilizar
-import rospy
-import threading
-import math
-import numpy as np
+import rospy, math, roslaunch, time, sys
 from std_msgs.msg import Float32MultiArray
 from geometry_msgs.msg import Twist
-from std_msgs.msg import Float32
-import os
-import sys
 import matplotlib.pyplot as plt
-import roslaunch
 import networkx as nx
-import matplotlib.pyplot as plt
-import time
-
-
 
 # Clase que representa una casilla, tiene ubicacion o punto que la define (mitad) y si un objeto la cubre o no.
 class Casilla:
@@ -24,7 +13,7 @@ class Casilla:
         self.y=float(yP)
         self.libre=pE
 
-
+# Clase que hace referenia a una posicion en especifico.
 class Posicion:
     def __init__(self, xP, yP, pTeta):
         self.x=float(xP)
@@ -44,33 +33,28 @@ twistInfoPos3 = Twist()
 twistInfoPos4 = Twist()
 # Es la variable en donde se almacena la posicion y orientacion actual del obstaculo 5.
 twistInfoPos5 = Twist()
-# ARRAYS
 # Distancia entre centro de cuadriculas, 10 debe ser divisible por esta distancia
 distanciaCuadricula = 0.25
 # Numero de cuadriculas de la escena seleccionada
-n=int(10/distanciaCuadricula)
+n = int(10/distanciaCuadricula)
 # Arreglo con la informacion de cada una de las casillas
-casillas=[]
+casillas = []
 # Posicion actual del robot, debe actualizarse por el topico
-posicionActual=Posicion(0,0,0)
-# Posicion final del robot, inicialmente se toma como la cuadricula superior derecha con angulos
+posicionActual = Posicion(0,0,0)
+# Posicion final del robot, inicialmente se toma como la cuadricula superior derecha con angulo 0
 posicionFinal=Posicion(5-distanciaCuadricula/2,5-distanciaCuadricula/2,0)
-
-ruta = None
 #Es el diametro de la rueda del Pioneer 3dx en metros.
 diametroRueda = 195.3/1000#metros
 #Es el radio de la rueda del Pioneer 3dx en metros.
 radioRueda = diametroRueda/2 #metros
 #Es la distancia entre el punto P y el eje de cada rueda.
-l = 0.19 #metros
+l = 0.19 # metros
 #Es la variable donde se almacena el valor de p (rho) que equivale a la distancia entre el punto actual y el final.
 p = 0
 #Es un umbral que se define para indicarle al robot cuando llega al punto final.
 umbralP = 0.3
 #Es una variable booleana que indica que el robot ha llegado al punto final.
 arrivedP = False
-
-
 #Es la variable donde se guarda la distancia en x entre el punto actual y final.
 dx = 0
 #Es la variable donde se guarda la distancia en y entre el punto actual y final.
@@ -93,19 +77,20 @@ mot = Float32MultiArray()
 #En esta se almacenan las velocidades de cada motor.
 mot.data = [0, 0]
 
-#En este metodo se inicializa el nodo, se suscribe a los topicos necesarios, se crea la variable
-#para publicar al topico de motorsVel y tambien se lanza el nodo encargado de graficar.
-def punto2c_JDS():
+#En este metodo se inicializa el nodo, se suscribe a los topicos necesarios, se crea la variable para publicar al
+# topico de motorsVel y tambien se lanza el nodo encargado de graficar. Ademas es el metodo encargado de realizar
+# las acciones de control necesarias segun la ruta dada para llevar el robot a la posicion final.
+def punto2c():
     global posicionActual, g, ruta, pubMot, arrivedP, p, umbralP, kp
-    rospy.init_node('punto2_cJDS', anonymous=True)
+    rospy.init_node('punto2c', anonymous=True)
     rospy.Subscriber ('InfoObs', Twist, setObst)
     rospy.Subscriber ('pioneerPosition', Twist, setPositionCallback)
     pubMot = rospy.Publisher ('motorsVel', Float32MultiArray, queue_size=10)
+    iniciarGraficador()
     time.sleep (.1)  # Espera a que se actualice informacion de todos los obstaculos
     creadorVerticesCasillas()
     creadorArcos()
     ruta = nx.astar_path(g,numCasillas(posicionActual.x,posicionActual.y),numCasillas(posicionFinal.x,posicionFinal.y) , heuristic=heuristic)
-    teta = 0
     if len(ruta)>1:
         teta = math.atan2(casillas[ruta[1]].y-casillas[ruta[0]].y, casillas[ruta[1]].x-casillas[ruta[0]].x)
     else:
@@ -114,7 +99,6 @@ def punto2c_JDS():
     iRuta = 0
     rate = rospy.Rate (10)
     fin = False
-    print len(ruta)
     while (not rospy.is_shutdown()) and (not fin):
         if arrivedP:
             if iRuta == len(ruta)-1:
@@ -125,24 +109,22 @@ def punto2c_JDS():
                 posInter = Posicion(casillas[ruta[iRuta+1]].x, casillas[ruta[iRuta+1]].y, math.atan2(casillas[ruta[iRuta+1]].y-casillas[ruta[iRuta]].y, casillas[ruta[iRuta+1]].x-casillas[ruta[iRuta]].x))
                 iRuta = iRuta + 1
                 arrivedP = False
-                print iRuta
             elif iRuta == len(ruta):
                 fin = True
         calcularVelocidades(posInter)
         pubMot.publish(mot)
         rate.sleep()
-    print ("Salio")
     mot.data[0] = 0
     mot.data[1] = 0
     pubMot.publish (mot)
 
 
-
+# Metodo que arroja la distancia euclidiana entre dos casillas segun su numeramiento (no posicion exacta)
 def heuristic(i, j):
     global n
     return math.sqrt((i%n-j%n)**2+(i//n-j//n)**2)
 
-
+# Busca la casilla mas cercana para dos coordenadas en la distribucion
 def numCasillas(x, y):
     dist = float('Inf')
     indice = -1
@@ -153,13 +135,15 @@ def numCasillas(x, y):
             dist = distancia
     return indice
 
-
+# Metodo asociedo a topico para actualizar la posicon del pioneer
 def setPositionCallback(pos):
     global posicionActual
     posicionActual.x=pos.linear.x
     posicionActual.y=pos.linear.y
     posicionActual.teta=pos.angular.z
 
+
+# Metodo asociedo a topico para actualizar la posicion de los obstaculos
 def setObst(posicionObstacle):
     global twistInfoPos1, twistInfoPos2, twistInfoPos3, twistInfoPos4, twistInfoPos5
     if posicionObstacle.angular.x == 1 :
@@ -173,18 +157,21 @@ def setObst(posicionObstacle):
     else:
         twistInfoPos5=posicionObstacle
 
+
+# Metodo que crea los vertices y casillas del arreglo y del grafo no dirigido
 def creadorVerticesCasillas():
     global distanciaCuadricula, n
     xInic=-5.0+distanciaCuadricula/2
     yInic=5.0-distanciaCuadricula/2
     for i in range(0,n*n):
         g.add_node(i)
-        mod=np.mod(i,n)#columnas de la matriz
-        div=int(np.floor(i/n))#filas de la matriz
+        mod=i%n
+        div=i//n
         nC = Casilla(xInic+mod*distanciaCuadricula,yInic-div*distanciaCuadricula, libre(xInic+mod*distanciaCuadricula,yInic-div*distanciaCuadricula) )
         casillas.append(nC)
 
 
+# Metodo que crea los arcos del grafo
 def creadorArcos():
     for i in range(0,n**2):
         for j in range(i, n**2):
@@ -192,6 +179,8 @@ def creadorArcos():
                 g.add_edge(i,j)
 
 
+# Metodo que dice si hay o no obstaculo para cierta posicion (x,y) del mapa, arroja True si no hay obstaculo y False
+# de lo contrario
 def libre(xCas, yCas):# Si se encuentra un obstaculo en ella
     distanciaCarro = 0.27
     dist0 = math.sqrt ((twistInfoPos1.linear.x - xCas) ** 2 + (twistInfoPos1.linear.y - yCas) ** 2)
@@ -245,7 +234,16 @@ def calcularAngulos(pos):
     elif b<-math.pi:
         b = 2+math.pi+b
 
+# Metodo que ejecuta nodo graficador usanto herramiento roslaunch, crea un nuevo proceso.
+def iniciarGraficador():
+    package = 'taller3_4'
+    script = 'graficador.py'
+    node = roslaunch.core.Node (package, script)
+    launch = roslaunch.scriptapi.ROSLaunch ()
+    launch.start ()
+    process = launch.launch (node)
 
+# Metodo main, mira si existen parametros para la posicion final deseada y ejecuta el metodo principal
 if __name__ == '__main__':
     try:
         if len (sys.argv) > 3:
@@ -255,6 +253,6 @@ if __name__ == '__main__':
                 posicionFinal.teta = float (sys.argv[3])
             except ValueError:
                 pass
-        punto2c_JDS()
+        punto2c()
     except rospy.ROSInterruptException:
         pass
