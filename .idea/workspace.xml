@@ -2,13 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e86b60d7-0a2a-42f4-9d24-03f38deedc15" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/Scripts/Punto2/graficador.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Scripts/Punto2/puntoA.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Scripts/Punto2/puntoB.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Scripts/Punto2/puntoC.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Scripts/Punto2/puntoD.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Scripts/punto2bJDS.py" beforeDir="false" afterPath="$PROJECT_DIR$/Scripts/punto2bJDS.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Scripts/Punto2/puntoD.py" beforeDir="false" afterPath="$PROJECT_DIR$/Scripts/Punto2/puntoD.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -17,7 +11,17 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <leaf />
+    <leaf>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/Scripts/Punto2/puntoD.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="135">
+              <caret line="14" column="46" selection-start-line="14" selection-start-column="46" selection-end-line="14" selection-end-column="46" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -87,12 +91,6 @@
               <item name="taller3_4" type="b2602c69:ProjectViewProjectNode" />
               <item name="taller3_4" type="462c0819:PsiDirectoryNode" />
               <item name="Scripts" type="462c0819:PsiDirectoryNode" />
-              <item name=".idea" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="taller3_4" type="b2602c69:ProjectViewProjectNode" />
-              <item name="taller3_4" type="462c0819:PsiDirectoryNode" />
-              <item name="Scripts" type="462c0819:PsiDirectoryNode" />
               <item name="Punto2" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
@@ -136,10 +134,11 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="51" y="-4" width="1229" height="804" extended-state="7" />
+    <frame x="51" y="-4" width="1229" height="804" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info id="Favorites" side_tool="true" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.15422885" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.25870648" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Version Control" />
       <window_info anchor="bottom" id="Python Console" />
@@ -292,16 +291,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Scripts/Punto2/puntoD.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="365">
-          <caret line="291" column="2" selection-start-line="291" selection-start-column="2" selection-end-line="291" selection-end-column="2" />
-          <folding>
-            <element signature="e#94#106#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Scripts/Punto2/puntoC.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="364">
@@ -319,6 +308,13 @@
           <folding>
             <element signature="e#22#34#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Scripts/Punto2/puntoD.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="14" column="46" selection-start-line="14" selection-start-column="46" selection-end-line="14" selection-end-column="46" />
         </state>
       </provider>
     </entry>

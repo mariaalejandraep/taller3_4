@@ -12,7 +12,7 @@ class Casilla:
         self.x=float(xP)
         self.y=float(yP)
 
-
+# Clase que representa una posicion en el mapa
 class Posicion:
     def __init__(self, xP, yP, pTeta):
         self.x=float(xP)
