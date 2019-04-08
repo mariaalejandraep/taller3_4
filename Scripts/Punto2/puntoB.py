@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 #Se importan las librerias necesarias junto con los mensajes a utilizar
-import rospy
-import math
+import rospy, time, math
 from geometry_msgs.msg import Twist
 import matplotlib.pyplot as plt
 import networkx as nx
-import time
 
 
 # Clase que representa una casilla, tiene ubicacion o punto que la define (mitad) y si un objeto la cubre o no.
