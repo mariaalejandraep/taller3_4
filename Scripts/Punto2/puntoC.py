@@ -89,7 +89,8 @@ def punto2c():
     iniciarGraficador()
     time.sleep (.1)  # Espera a que se actualice informacion de todos los obstaculos
     creadorVerticesCasillas()
-    creadorArcos()
+    # creadorArcos()
+    creadorNuevoArcos()
     ruta = nx.astar_path(g,numCasillas(posicionActual.x,posicionActual.y),numCasillas(posicionFinal.x,posicionFinal.y) , heuristic=heuristic)
     if len(ruta)>1:
         teta = math.atan2(casillas[ruta[1]].y-casillas[ruta[0]].y, casillas[ruta[1]].x-casillas[ruta[0]].x)
@@ -177,6 +178,43 @@ def creadorArcos():
         for j in range(i, n**2):
             if j!=i and math.sqrt((i%n-j%n)**2 +(i//n-j//n)**2)<=math.sqrt(2) and libre(casillas[i].x, casillas[i].y) and libre(casillas[j].x, casillas[j].y):
                 g.add_edge(i,j)
+
+
+def creadorNuevoArcos():
+    global n
+    for i in range(0, n**2):
+        if i % 100 == 0:
+            print "Creando arcos fila:", i
+        if casillas[i].libre:
+            c = i%n
+            f = i//n
+            for j in range (1, 9):
+                if j == 1:
+                    cP = c-1
+                    fP = f
+                elif j == 2:
+                    cP = c-1
+                    fP = f-1
+                elif j == 3:
+                    cP = c
+                    fP = f-1
+                elif j == 4:
+                    cP = c+1
+                    fP = f-1
+                elif j == 5:
+                    cP = c+1
+                    fP = f
+                elif j == 6:
+                    cP = c+1
+                    fP = f+1
+                elif j == 7:
+                    cP = c
+                    fP = f+1
+                elif j == 8:
+                    cP = c-1
+                    fP = f+1
+                if cP in range(0, n) and fP in range(0, n) and casillas[fP*n+cP].libre:
+                    g.add_edge (i, fP*n+cP)
 
 
 # Metodo que dice si hay o no obstaculo para cierta posicion (x,y) del mapa, arroja True si no hay obstaculo y False

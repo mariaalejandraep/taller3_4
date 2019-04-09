@@ -22,7 +22,6 @@ class Posicion:
 
 # Iniciar grafico de networkx
 g=nx.Graph()
-# Variables tipo Twist
 # Es la variable en donde se almacena la posicion y orientacion actual del obstaculo 1.
 twistInfoPos1 = Twist()
 # Es la variable en donde se almacena la posicion y orientacion actual del obstaculo 2.
@@ -42,7 +41,7 @@ casillas = []
 # Posicion actual del robot, debe actualizarse por el topico
 posicionActual = Posicion(0,0,0)
 # Posicion final del robot, inicialmente se toma como la cuadricula superior derecha con angulo 0
-posicionFinal=Posicion(5-distanciaCuadricula/2,5-distanciaCuadricula/2,0)
+posicionFinal=Posicion(10-distanciaCuadricula/2,10-distanciaCuadricula/2,math.pi/2)
 #Es el diametro de la rueda del Pioneer 3dx en metros.
 diametroRueda = 195.3/1000#metros
 #Es el radio de la rueda del Pioneer 3dx en metros.
@@ -67,21 +66,23 @@ b = 0
 # Equivale al angulo que se forma en el triangulo formado por el punto actual y final.
 t = 0
 #Es la constante kp. Debe ser mayor que 0 para que el sistema sea localmente estable.
-kp = 0.1 #0.1 # mayor que 0
+kp = 0.15 #0.4 # mayor que 0, antes era 0.1
 #Es la constante ka. ka-kp debe ser mayor que 0 para que el sistema sea localmente estable.
-ka = 0.5 # ka-kp mayor que 0
+ka = .5# 1 # ka-kp mayor que 0, antes era 0.5
 #Es la constante kb. Debe ser menor a 0 para que el sistema sea localmente estable.
 kb = -0.01 # menor que 0
 #Es la variable utilizada para publicar en el topico motorsVel la velocidad de cada motor.
 mot = Float32MultiArray()
 #En esta se almacenan las velocidades de cada motor.
 mot.data = [0, 0]
-
+# Senal para saber si ya se esta corriendo la simulacion de ROS
+empezar = False
 
 # kp = 0.1
 # ka = 0.5
 # umbralP = 0.3
 
+pedal = 0.08
 
 
 
@@ -89,19 +90,18 @@ mot.data = [0, 0]
 # topico de motorsVel y tambien se lanza el nodo encargado de graficar. Ademas es el metodo encargado de realizar
 # las acciones de control necesarias segun la ruta dada para llevar el robot a la posicion final.
 def punto2c():
-    global posicionActual, g, ruta, pubMot, arrivedP, p, umbralP, kp, ka
+    global posicionActual, g, ruta, pubMot, arrivedP, p, umbralP, kp, ka, empezar, pedal
     rospy.init_node('punto2c', anonymous=True)
     rospy.Subscriber ('InfoObs', Twist, setObst)
     rospy.Subscriber ('pioneerPosition', Twist, setPositionCallback)
     pubMot = rospy.Publisher ('motorsVel', Float32MultiArray, queue_size=10)
+    while not empezar:
+        empezar = empezar or False
     iniciarGraficador()
     time.sleep (.1)  # Espera a que se actualice informacion de todos los obstaculos
     creadorVerticesCasillas()
-    print "creo vertices"
-    start = time.time()
     creadorArcos()
-    print time.time()-start
-    print "creo arcos"
+    print "Se crearon arcos"
     ruta = nx.astar_path(g,numCasillas(posicionActual.x,posicionActual.y),numCasillas(posicionFinal.x,posicionFinal.y) , heuristic=heuristic)
     if len(ruta)>1:
         teta = math.atan2(casillas[ruta[1]].y-casillas[ruta[0]].y, casillas[ruta[1]].x-casillas[ruta[0]].x)
@@ -117,7 +117,7 @@ def punto2c():
                 iRuta = iRuta + 1
                 arrivedP = False
                 posInter = posicionFinal
-
+                pedal = 0
             elif iRuta < len(ruta)-1:
                 posInter = Posicion(casillas[ruta[iRuta+1]].x, casillas[ruta[iRuta+1]].y, math.atan2(casillas[ruta[iRuta+1]].y-casillas[ruta[iRuta]].y, casillas[ruta[iRuta+1]].x-casillas[ruta[iRuta]].x))
                 iRuta = iRuta + 1
@@ -158,7 +158,7 @@ def setPositionCallback(pos):
 
 # Metodo asociedo a topico para actualizar la posicion de los obstaculos
 def setObst(posicionObstacle):
-    global twistInfoPos1, twistInfoPos2, twistInfoPos3, twistInfoPos4, twistInfoPos5
+    global twistInfoPos1, twistInfoPos2, twistInfoPos3, twistInfoPos4, twistInfoPos5, empezar
     if posicionObstacle.angular.x == 1 :
         twistInfoPos1=posicionObstacle
     elif posicionObstacle.angular.x == 2 :
@@ -169,6 +169,8 @@ def setObst(posicionObstacle):
         twistInfoPos4=posicionObstacle
     else:
         twistInfoPos5=posicionObstacle
+    if not empezar:
+        empezar = True
 
 
 # Metodo que crea los vertices y casillas del arreglo y del grafo no dirigido
@@ -186,19 +188,48 @@ def creadorVerticesCasillas():
 
 # Metodo que crea los arcos del grafo
 def creadorArcos():
-    for i in range(0,n**2):
-        print i
+    global n
+    for i in range(0, n**2):
+        if i % 100 == 0:
+            print "Creando arcos fila:", i
         if casillas[i].libre:
-            for j in range(i+1, n**2):
-                if  math.sqrt((i%n-j%n)**2 +(i//n-j//n)**2)<=math.sqrt(2) and casillas[j].libre:
-                    g.add_edge(i,j)
+            c = i%n
+            f = i//n
+            for j in range (1, 9):
+                if j == 1:
+                    cP = c-1
+                    fP = f
+                elif j == 2:
+                    cP = c-1
+                    fP = f-1
+                elif j == 3:
+                    cP = c
+                    fP = f-1
+                elif j == 4:
+                    cP = c+1
+                    fP = f-1
+                elif j == 5:
+                    cP = c+1
+                    fP = f
+                elif j == 6:
+                    cP = c+1
+                    fP = f+1
+                elif j == 7:
+                    cP = c
+                    fP = f+1
+                elif j == 8:
+                    cP = c-1
+                    fP = f+1
+                if cP in range(0, n) and fP in range(0, n) and casillas[fP*n+cP].libre:
+                    g.add_edge (i, fP*n+cP)
+
+
 
 
 # Metodo que dice si hay o no obstaculo para cierta posicion (x,y) del mapa, arroja True si no hay obstaculo y False
 # de lo contrario
 def libre(xCas, yCas):# Si se encuentra un obstaculo en ella
     if math.sqrt ((0.51 / 2) ** 2 + 0.41 ** 2) > distanciaCuadricula / math.sqrt (2):
-        # distanciaCarro = l
         distanciaCarro = math.sqrt ((0.51 / 2) ** 2 + 0.41 ** 2) # 0.27
     else:
         distanciaCarro = distanciaCuadricula / math.sqrt (2)
@@ -234,8 +265,8 @@ def calcularVelocidades(pos):
     calcularAngulos(pos)
     v = kp*p
     w = ka*a+kb*b
-    mot.data[0] = (v-l*w)/radioRueda
-    mot.data[1] =(v+l*w)/radioRueda
+    mot.data[0] = (v-l*w)/radioRueda + pedal
+    mot.data[1] =(v+l*w)/radioRueda + pedal
 
 #En este metodo se calculan los angulos a (alpha) y b (beta). Si el umbral se cumplio, las variables p (rho)
 #y a (alpha) se igualan a 0 para permitirle al robot girar y lograr orientarse de manera correcta.
