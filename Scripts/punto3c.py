@@ -8,8 +8,13 @@ from pynput.keyboard import Key, Listener
 from std_msgs.msg import Float32MultiArray
 from geometry_msgs.msg import Twist
 
+#Las que se importan para este
+import random
 
-vel = 10
+#vel en 0 por ahora
+vel = 0
+
+
 msg = Float32MultiArray()
 msg.data = [vel, vel]
 twistInfo = Twist()
@@ -19,6 +24,9 @@ xCord = []
 yCord = []
 terminate = False
 
+obs = []
+num = 0
+iteraciones = 2
 
 def on_press(key):
     global msg, vel
@@ -45,6 +53,7 @@ def robot_controller():
     global msg, twistInfo
     rospy.init_node('robot_controller', anonymous=True)
     rospy.Subscriber('pioneerPosition', Twist, setPositionCallback)
+    rospy.Subscriber('scanner', Float32MultiArray, actualizarObstaculos)
     pub = rospy.Publisher('motorsVel', Float32MultiArray, queue_size=10)
     pubPosicion = rospy.Publisher('topico_Posicion', Twist, queue_size=10)
     threading.Thread(target=ThreadInputs).start()
@@ -59,10 +68,32 @@ def robot_controller():
             contador = 0
         rate.sleep()
 
+def actualizarObstaculos(puntos):
+    global num, obs
+
+    num = puntos.layout.data_offset
+    obs = puntos.data
+
+    calcularLineas()
 
 def setPositionCallback(pos):
     global twistInfo
     twistInfo = pos
+
+def calcularLineas():
+    global num, obs
+
+    punto = random.randint(0, num/2)*2
+
+    i = 0
+
+    while i < iteraciones:
+        p = obs[punto]
+        d = obs[punto+1]
+
+
+
+
 
 if __name__ == '__main__':
     try:

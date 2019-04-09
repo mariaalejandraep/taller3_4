@@ -60,8 +60,6 @@ def animate(i):
         p = obs[i]
         d = obs[i+1]
 
-        rospy.loginfo("P: {}, D: {}, N: {}".format(p,d,num))
-
         x = math.cos(p)*d
         y = math.sin(p)*d
 
