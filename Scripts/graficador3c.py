@@ -6,6 +6,8 @@ from geometry_msgs.msg import Twist
 from std_msgs.msg import Float32MultiArray
 import math
 
+import numpy as np
+
 fig = None
 axs = None
 xCord = []
@@ -15,6 +17,8 @@ yActual = 0
 
 obs = []
 num = 0
+m = 0
+b = 0
 
 ani = None
 
@@ -23,19 +27,18 @@ def graficar():
     global fig, xCord, axs, ani
     fig = plt.figure()
     axs = fig.add_subplot(111)
-    rospy.init_node('graficador', anonymous=True)
+    rospy.init_node('graficador3c', anonymous=True)
     rospy.Subscriber('topico_Posicion', Twist, setNewPosition)
+    rospy.Subscriber('rectas', Float32MultiArray, ponerRectas)
     rospy.Subscriber('scanner', Float32MultiArray, setObstacles)
     ani = animation.FuncAnimation(fig, animate)
     plt.show()
 
-def setObstacles(puntos):
-    global num, obs
+def ponerRectas(rectas):
+    global num, obs, m, b
 
-    num = puntos.layout.data_offset
-    obs = puntos.data
-
-    pass
+    m = rectas.data[0]
+    b = rectas.data[1]
 
 def setNewPosition(pos):
     global xCord, yCord, xActual, yActual
@@ -46,13 +49,30 @@ def setNewPosition(pos):
     yCord.append(yActual)
     yCord = yCord[-100:]
 
+def setObstacles(puntos):
+    global num, obs
+
+    num = puntos.layout.data_offset
+    obs = puntos.data
 
 def animate(i):
-    global axs, xCord, yCord, num
+    global axs, xCord, yCord, num, m, b
     axs.clear()
     axs.axes.set_xlim(-5, 5)
     axs.axes.set_ylim(-5, 5)
     axs.plot(xCord, yCord)
+
+    i = 0
+
+    while i < 1:
+
+        x = np.linspace(-5,5,100)
+        y = x*m + b
+
+        axs.plot(x,y)
+
+        i = i+2
+
 
     i = 0
 

@@ -23,7 +23,7 @@ def graficar():
     global fig, xCord, axs, ani
     fig = plt.figure()
     axs = fig.add_subplot(111)
-    rospy.init_node('graficador', anonymous=True)
+    rospy.init_node('graficador3a', anonymous=True)
     rospy.Subscriber('topico_Posicion', Twist, setNewPosition)
     rospy.Subscriber('scanner', Float32MultiArray, setObstacles)
     ani = animation.FuncAnimation(fig, animate)
@@ -34,8 +34,6 @@ def setObstacles(puntos):
 
     num = puntos.layout.data_offset
     obs = puntos.data
-
-    pass
 
 def setNewPosition(pos):
     global xCord, yCord, xActual, yActual
