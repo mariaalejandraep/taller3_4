@@ -81,6 +81,8 @@ casillasRRT = []
 xDescartados = []
 # Arreglo de cordenadas y propuestas por RTT descartadas por presencia de obstaculos
 yDescartados = []
+# Arreglo que permite rastrear la ruta generada por el RRT
+track = []
 
 # En este metodo se inicializa el nodo, se suscribe a los topicos necesarios, se crea la variable para publicar al
 # topico de motorsVel y tambien se lanza el nodo encargado de graficar. De igual forma ejecuta el metodo para el RRT y
@@ -94,7 +96,7 @@ def punto2d():
     pubMot = rospy.Publisher ('motorsVel', Float32MultiArray, queue_size=10)
     time.sleep (.1)  # Espera a que se actualice informacion de todos los obstaculos
     RRT(posicionActual.x, posicionActual.y, posicionFinal.x, posicionFinal.y)
-    ruta = nx.astar_path(g,0, len(casillasRRT)-1 , heuristic=heuristic)
+    ruta = trackRoute()#  nx.astar_path(g,0, len(casillasRRT)-1 , heuristic=heuristic)
     visualizacionPrevia(ruta)
     iniciarGraficador()
     if len(ruta)>1:
@@ -158,8 +160,9 @@ def setObst(posicionObstacle):
 # linea a al mas cercanos del grafo y saca el punto en esta linea a cierta distancia, en caso de que este punto este
 # libre genera el vertice y arco con el nodo ya perteneciente y lo anade al grafo
 def RRT(xIni, yIni, xFin, yFin):
-    global g, distanciaCuadricula, xDescartados, yDescartados
+    global g, distanciaCuadricula, xDescartados, yDescartados, track
     g.add_node(0)
+    track.append(-1)
     step = distanciaCuadricula
     radioError = .25
     casillasRRT.append(Casilla(xIni,yIni))
@@ -178,6 +181,7 @@ def RRT(xIni, yIni, xFin, yFin):
             g.add_node(contador)
             casillasRRT.append(Casilla(xPropuesto, yPropuesto))
             g.add_edge(posCasillaCercana,contador)
+            track.append (posCasillaCercana)
             contador = contador + 1
             if math.sqrt((xFin-xPropuesto)**2+(yFin-yPropuesto)**2)<=radioError:
                 llego = True
@@ -287,6 +291,16 @@ def visualizacionPrevia(path):
     plt.plot(xDescartados, yDescartados, 'ro')
     plt.plot(xPath,yPath,'go')
     plt.show()
+
+# Obtener ruta la ruta del arbol generado por el RRT
+def trackRoute():
+    global track
+    resp = []
+    i = len(track)-1
+    while i!=-1:
+        resp.insert(0, i)
+        i =  track[i]
+    return resp
 
 # Metodo main, cambio la posicion final en caso de que se pasen por parametro una nueva posicion y ejecuta el
 # metodo principal

@@ -30,7 +30,7 @@ twistInfoPos5 = Twist()
 # Matriz de distribucion e informacion de casillas
 Equivalente=[]
 # Distancia entre centro de cuadriculas, 10 debe ser divisible por esta distancia
-distanciaCuadricula = .8
+distanciaCuadricula = .5
 # Numero de cuadriculas en un lado de la escena seleccionada
 n=int(80/distanciaCuadricula)
 
@@ -64,17 +64,43 @@ def creadorVerticesCasillas():
         nuevaCasilla = Casilla(xInic+mod*distanciaCuadricula,yInic-div*distanciaCuadricula, libre(xInic+mod*distanciaCuadricula,yInic-div*distanciaCuadricula) )
         Equivalente[div].append(nuevaCasilla)
 
-
 # Crea los arcos entre los vertices creados en el grafo, solo es necesario recorrer la mitad de la matriz debido a que
 # es un grafo no dirigido
 def creadorArcos():
-    start = time.time()
-    for i in range(0,n**2):
-        if Equivalente[i//n][i%n].libre:
-            for j in range(i+1, n**2):
-                if math.sqrt((i%n-j%n)**2 +(i//n-j//n)**2)<=math.sqrt(2) and Equivalente[j//n][j%n].libre:
-                    g.add_edge(i,j)
-    print time.time()-start
+    global n
+    for i in range(0, n**2):
+        if i % 100 == 0:
+            print "Creando arcos fila:", i
+        c = i % n
+        f = i // n
+        if Equivalente[f][c].libre:
+            for j in range (1, 9):
+                if j == 1:
+                    cP = c-1
+                    fP = f
+                elif j == 2:
+                    cP = c-1
+                    fP = f-1
+                elif j == 3:
+                    cP = c
+                    fP = f-1
+                elif j == 4:
+                    cP = c+1
+                    fP = f-1
+                elif j == 5:
+                    cP = c+1
+                    fP = f
+                elif j == 6:
+                    cP = c+1
+                    fP = f+1
+                elif j == 7:
+                    cP = c
+                    fP = f+1
+                elif j == 8:
+                    cP = c-1
+                    fP = f+1
+                if cP in range(0, n) and fP in range(0, n) and Equivalente[fP][cP].libre:
+                    g.add_edge (i, fP*n+cP)
 
 
 # Metodo que indica si cierta posicion en la escena esta ocupada por alguno de los obstaculos, devuelve True en caso de
