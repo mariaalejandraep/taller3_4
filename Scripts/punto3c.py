@@ -12,9 +12,7 @@ from geometry_msgs.msg import Twist
 import random
 import math
 
-#vel en 0 por ahora
 vel = 2
-
 
 msg = Float32MultiArray()
 msg.data = [vel, vel]
@@ -32,6 +30,8 @@ xActual = 0
 yActual = 0
 mp = 0
 bp = 0
+umbralInlier = 0.1
+minimoInliers = 0.2
 
 def on_press(key):
     global msg, vel
@@ -89,11 +89,9 @@ def setPositionCallback(pos):
     yActual = pos.linear.y
 
 def calcularLineas():
-    global num, obs, xActual, yActual, mp, bp, iteraciones
-
+    global num, obs, xActual, yActual, mp, bp, iteraciones, umbralInlier
 
     i = 0
-    errorGuardada = 9999
 
     mp = 0
     bp = 0
@@ -124,24 +122,34 @@ def calcularLineas():
         b1 = y1-m1*x1
 
         j = 0
-        error = 0
+        cantidadInliers = 0
 
         while j < num:
 
-            xj = obs[j]
-            yj = obs[j+1]
+            pj = obs[j]
+            dj = obs[j+1]
+
+            xj = xActual + dj*math.cos(pj)
+            yj = yActual + dj*math.sin(pj)
 
             xe = (m1*yj-m1*b1+xj)/(1+m1**2)
             ye = m1*xe+b1
 
-            error = error + (ye+yj)**2+(xe+xj)**2
+            error = (ye-yj)**2+(xe-xj)**2
+
+            #rospy.loginfo("Error:{}".format(error))
+
+            if(error < umbralInlier):
+                cantidadInliers = cantidadInliers+1
 
             j = j+2
 
-        if (error < errorGuardada):
+        rospy.loginfo("Inliers:{}".format(cantidadInliers))
+
+        if (cantidadInliers > minimoInliers*num):
             mp = m1
             bp = b1
-            errorGuardada = error
+            rospy.loginfo("Entre. num:{}".format(num))
             #rospy.loginfo("mp:{} y bp:{}".format(mp,bp))
 
         #rospy.loginfo("punto1:{}, punto2:{} y num:{}".format(punto1,punto2,num))
