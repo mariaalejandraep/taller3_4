@@ -32,6 +32,7 @@ mp = 0
 bp = 0
 umbralInlier = 0.1
 minimoInliers = 0.2
+rectas = Float32MultiArray()
 
 def on_press(key):
     global msg, vel
@@ -60,7 +61,7 @@ def robot_controller():
     rospy.Subscriber('pioneerPosition', Twist, setPositionCallback)
     rospy.Subscriber('scanner', Float32MultiArray, actualizarObstaculos)
     pub = rospy.Publisher('motorsVel', Float32MultiArray, queue_size=10)
-    #pubRectas = rospy.Publisher('rectas', )
+    pubRectas = rospy.Publisher('rectas', Float32MultiArray, queue_size=10)
     pubPosicion = rospy.Publisher('topico_Posicion', Twist, queue_size=10)
     threading.Thread(target=ThreadInputs).start()
     rate = rospy.Rate(10)
@@ -68,6 +69,7 @@ def robot_controller():
 
     while not rospy.is_shutdown():
         pub.publish(msg)
+        pubRectas.publish(rectas)
         contador = contador + 1
         if contador == 3:
             pubPosicion.publish(twistInfo)
@@ -89,12 +91,14 @@ def setPositionCallback(pos):
     yActual = pos.linear.y
 
 def calcularLineas():
-    global num, obs, xActual, yActual, mp, bp, iteraciones, umbralInlier
+    global num, obs, xActual, yActual, mp, bp, iteraciones, umbralInlier, rectas
 
     i = 0
 
-    mp = 0
-    bp = 0
+    rectas.data[:] = []
+
+    rospy.loginfo("Rectas: ")
+    rospy.loginfo(rectas)
 
     while i < iteraciones:
 
@@ -144,13 +148,14 @@ def calcularLineas():
 
             j = j+2
 
-        rospy.loginfo("Inliers:{}".format(cantidadInliers))
+        #rospy.loginfo("Inliers:{}".format(cantidadInliers))
 
         if (cantidadInliers > minimoInliers*num):
-            mp = m1
-            bp = b1
-            rospy.loginfo("Entre. num:{}".format(num))
+            rectas.data.append(m1)
+            rectas.data.append(b1)
             #rospy.loginfo("mp:{} y bp:{}".format(mp,bp))
+
+        i = i + 1
 
         #rospy.loginfo("punto1:{}, punto2:{} y num:{}".format(punto1,punto2,num))
 
