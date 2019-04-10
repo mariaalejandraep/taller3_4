@@ -5,6 +5,7 @@ from pacman.srv import mapService
 from pacman.msg import actions
 from pacman.msg import cookiesPos
 import numpy as np
+import time
 class Queue:
     def __init__(self):
         self.items = []
@@ -244,13 +245,20 @@ def pacman_controller_py():
         llegueEnX = [[noLlego for x in range(maxMapaY)] for y in range(maxMapaX)]
         llegueEnY= [[noLlego for x in range(maxMapaY)] for y in range(maxMapaX)]
         rate = rospy.Rate(h)  # 6.666Hz
-
+        startFinal = time.time()
         while not rospy.is_shutdown():
             if (var==True and done==False and tamanioC is not 0):
+                start = time.time()
                 definirMovimiento()
+                end = time.time()
+                rospy.loginfo(end-start)
                 galletaActualX=posicionCj[i]
                 galletaActualY=posicionCi[i]
+            if tamanioC is 0 and done:
+                endFinal = time.time()
 
+                rospy.loginfo(endFinal-startFinal)
+                break
 
 
             if done:

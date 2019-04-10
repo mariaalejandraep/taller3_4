@@ -161,7 +161,7 @@ def definirMovimiento():
         if ruta.size()<rutaMin.size():
             rutaMin=ruta
             z=j
-    
+
     done=True
 
 
