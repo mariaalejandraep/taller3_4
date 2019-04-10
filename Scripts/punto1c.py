@@ -68,16 +68,18 @@ minYre=0
 maxMapaY=0
 maxMapaX=0
 noLlego=999
+rutaMin=Stack()
 x=0
 y=0
 posPacman=False
 i=0
+z=0
 
 a = [[False for x in range(maxMapaX+1)] for y in range(maxMapaY+1)]
 llegueEnX = [[noLlego for x in range(maxMapaX+1)] for y in range(maxMapaY+1)]
 llegueEnY= [[noLlego for x in range(maxMapaX+1)] for y in range(maxMapaY+1)]
 
-def BF (posactx,posacty,posGoalx,posGoalY):
+def BF (posactx,posacty,posGoalx,posGoalY,j):
     #rospy.loginfo("estoy calculando")
     global q,a,ruta,pos1,pos2,llegueEnY,llegueEnX,posicionPacmanX,posicionPacmanY,retornar,maxMapaY,maxMapaX,noLlego
     a = [[False for x in range(maxMapaY)] for y in range(maxMapaX)]
@@ -97,7 +99,7 @@ def BF (posactx,posacty,posGoalx,posGoalY):
         pos2=q.dequeue()
 
         a[pos1+(maxMapaX/2)-1][pos2+(maxMapaY/2)-1]=True
-        if pos1==posicionCj[i] and pos2==posicionCi[i]:
+        if pos1==posicionCj[j] and pos2==posicionCi[j]:
             retornar=True
             break
 
@@ -136,32 +138,39 @@ def BF (posactx,posacty,posGoalx,posGoalY):
 
 def definirMovimiento():
 
-    global done, a, posicionPacmanX,posicionPacmanY,i,punto1,punto2,temp,posicionCi,posicionCj
+    global done, a, posicionPacmanX,posicionPacmanY,i,punto1,punto2,temp,posicionCi,posicionCj,z,rutaMin,ruta
+    w=0
+    while w<500:
+        rutaMin.push(w)
+        w=w+1
+    for j in range (0,tamanioC):
 
-    if BF(posicionPacmanX,posicionPacmanY,posicionCj[i],posicionCi[i])==True:
-
-        punto1=posicionCj[i]
-        punto2=posicionCi[i]
-        ruta.push(punto1)
-        ruta.push(punto2)
-
-        while not (punto1 == posicionPacmanX and punto2 == posicionPacmanY):
-            #global punto1,punto2,temp
-            temp=punto1
-            punto1= llegueEnX[punto1+(maxMapaX/2)-1][punto2+(maxMapaY/2)-1]
-            punto2= llegueEnY[temp+(maxMapaX/2)-1][punto2+(maxMapaY/2)-1]
+        if BF(posicionPacmanX,posicionPacmanY,posicionCj[j],posicionCi[j],j)==True:
+            ruta=Stack()
+            punto1=posicionCj[j]
+            punto2=posicionCi[j]
             ruta.push(punto1)
             ruta.push(punto2)
 
+            while not (punto1 == posicionPacmanX and punto2 == posicionPacmanY):
+                temp=punto1
+                punto1= llegueEnX[punto1+(maxMapaX/2)-1][punto2+(maxMapaY/2)-1]
+                punto2= llegueEnY[temp+(maxMapaX/2)-1][punto2+(maxMapaY/2)-1]
+                ruta.push(punto1)
+                ruta.push(punto2)
+        if ruta.size()<rutaMin.size():
+            rutaMin=ruta
+            z=j
+    
     done=True
 
 
 def moverPacman():
     global x,y, posicionPacmanY,posicionPacmanX, msg,ruta,posicionCi,posicionCj
-    if not ruta.isEmpty():
+    if not rutaMin.isEmpty():
 
-        y=ruta.pop()
-        x=ruta.pop()
+        y=rutaMin.pop()
+        x=rutaMin.pop()
         rX= posicionPacmanX-x
         rY= posicionPacmanY-y
 
@@ -228,7 +237,7 @@ def pacman_controller_py():
 
     try:
         mapRequestClient = rospy.ServiceProxy('pacman_world', mapService)
-        global msg, mapa, maxMapaX, maxMapaY, maxXre, maxYre, minXre, minYre, h, ruta, q, i , var, done, obs, tamanioC, a, llegueEnX, llegueEnY, noLlego, posicionCi, posicionCj,x,y,posPacman
+        global msg, mapa, maxMapaX, maxMapaY, maxXre, maxYre, minXre, minYre, h, ruta, q, i , var, done, obs, tamanioC, a, llegueEnX, llegueEnY, noLlego, posicionCi, posicionCj,x,y,posPacman,rutaMin
 
         mapa = mapRequestClient("Grupo4")
         maxXre=mapa.maxX
@@ -245,11 +254,12 @@ def pacman_controller_py():
         llegueEnY= [[noLlego for x in range(maxMapaY)] for y in range(maxMapaX)]
         rate = rospy.Rate(h)  # 6.666Hz
 
+
         while not rospy.is_shutdown():
             if (var==True and done==False and tamanioC is not 0):
                 definirMovimiento()
-                galletaActualX=posicionCj[i]
-                galletaActualY=posicionCi[i]
+                galletaActualX=posicionCj[z]
+                galletaActualY=posicionCi[z]
 
 
 
