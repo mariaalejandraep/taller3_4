@@ -26,12 +26,14 @@ terminate = False
 
 obs = []
 num = 0
-iteraciones = 5
+iteraciones = 40
 xActual = 0
 yActual = 0
 mp = 0
 bp = 0
-umbralInlier = 0.1
+umbralInlier = 0.01
+umbralPuntos = 10
+minimoInliers = 0
 rectas = Float32MultiArray()
 datosQuitar = []
 numQuitar = 0
@@ -59,7 +61,7 @@ def ThreadInputs():
 
 
 def robot_controller():
-    global msg, twistInfo
+    global msg, twistInfo, done, pubRectas
     rospy.init_node('robot_controller', anonymous=True)
     rospy.Subscriber('pioneerPosition', Twist, setPositionCallback)
     rospy.Subscriber('scanner', Float32MultiArray, actualizarObstaculos)
@@ -68,15 +70,17 @@ def robot_controller():
     pubPosicion = rospy.Publisher('topico_Posicion', Twist, queue_size=10)
     threading.Thread(target=ThreadInputs).start()
     rate = rospy.Rate(10)
-    contador = 0
+    #contador = 0
 
     while not rospy.is_shutdown():
+        #calcularLineas()
         pub.publish(msg)
-        pubRectas.publish(rectas)
-        contador = contador + 1
-        if contador == 3:
-            pubPosicion.publish(twistInfo)
-            contador = 0
+        #pubRectas.publish(rectas)
+        #rospy.loginfo("len:{}".format(len(rectas.data)/2))
+        #contador = contador + 1
+        #if contador == 3:
+        pubPosicion.publish(twistInfo)
+        #    contador = 0
         rate.sleep()
 
 def actualizarObstaculos(puntos):
@@ -84,7 +88,6 @@ def actualizarObstaculos(puntos):
 
     num = puntos.layout.data_offset
     obs = list(puntos.data)
-
     calcularLineas()
 
 def setPositionCallback(pos):
@@ -94,7 +97,9 @@ def setPositionCallback(pos):
     yActual = pos.linear.y
 
 def calcularLineas():
-    global num, obs, xActual, yActual, mp, bp, iteraciones, umbralInlier, rectas, datosQuitar, numQuitar, obsQuitar
+    global num, obs, xActual, yActual, mp, bp, iteraciones, umbralInlier, rectas, datosQuitar, numQuitar, obsQuitar, minimoInliers,pubRectas
+
+    minimoInliers = num/10
 
     i = 0
 
@@ -102,12 +107,15 @@ def calcularLineas():
 
     #datosQuitar = obs
 
-    rospy.loginfo("numObs comienzo:{}".format(num))
+    #rospy.loginfo("numObs comienzo:{}".format(num))
 
-    while num > 10:
+    while num > umbralPuntos:
 
+        minimoInliers = num/10
         obsQuitar[:] = obs[:]
         obsNumQuitar = num
+
+        i = 0
 
         while i < iteraciones:
 
@@ -177,15 +185,17 @@ def calcularLineas():
 
                 j = j+2
 
-            #rospy.loginfo("Inliers:{}".format(cantidadInliers))
+            #rospy.loginfo("Inliers:{} y num:{} y minimo:{}".format(cantidadInliers,num,minimoInliers))
 
-            if (cantidadInliers > maximoInlier):
+            if (cantidadInliers > maximoInlier and cantidadInliers > minimoInliers):
                 mp = m1
                 bp = b1
 
+                #rospy.loginfo("Entre!")
+
                 obsQuitar[:] = datosQuitar[:]
                 obsNumQuitar = numQuitar
-                rospy.loginfo(cantidadInliers)
+                #rospy.loginfo(cantidadInliers)
                 #num = numQuitar
 
                 #rospy.loginfo("num:{} y len:{}".format(num,len(obs)))
@@ -200,8 +210,11 @@ def calcularLineas():
 
         rectas.data.append(mp)
         rectas.data.append(bp)
-        #rospy.loginfo(rectas.data)
-        rospy.loginfo("num:{} y lenObs:{}".format(num,len(obs)))
+        #rospy.loginfo("num:{} y len:{}".format(num,len(rectas.data)))
+        #rospy.loginfo("num:{} y lenObs:{}".format(num,len(obs)))
+
+    pubRectas.publish(rectas)
+    rospy.loginfo(len(rectas.data)/2)
 
 
 if __name__ == '__main__':

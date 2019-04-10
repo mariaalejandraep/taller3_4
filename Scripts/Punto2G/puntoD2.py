@@ -33,7 +33,7 @@ twistInfoPos4 = Twist()
 # Es la variable en donde se almacena la posicion y orientacion actual del obstaculo 5.
 twistInfoPos5 = Twist()
 # Distancia entre centro de cuadriculas, 10 debe ser divisible por esta distancia
-distanciaCuadricula = 0.25
+distanciaCuadricula = 0.8
 # Numero de cuadriculas de la escena seleccionada
 n=int(10/distanciaCuadricula)
 # Arreglo con la informacion de cada una de las casillas
@@ -41,7 +41,7 @@ casillas=[]
 # Posicion actual del robot, debe actualizarse por el topico
 posicionActual=Posicion(0,0,0)
 # Posicion final del robot, inicialmente se toma como la cuadricula superior derecha con angulos
-posicionFinal=Posicion(5-distanciaCuadricula/2,5-distanciaCuadricula/2,0)
+posicionFinal=Posicion(10-distanciaCuadricula/2,10-distanciaCuadricula/2,math.pi/2)
 #Es el diametro de la rueda del Pioneer 3dx en metros.
 diametroRueda = 195.3/1000#metros
 #Es el radio de la rueda del Pioneer 3dx en metros.
@@ -66,7 +66,7 @@ b = 0
 # Equivale al angulo que se forma en el triangulo formado por el punto actual y final.
 t = 0
 #Es la constante kp. Debe ser mayor que 0 para que el sistema sea localmente estable.
-kp = 0.1 # mayor que 0
+kp = 0.11 # mayor que 0
 #Es la constante ka. ka-kp debe ser mayor que 0 para que el sistema sea localmente estable.
 ka = 0.5 # ka-kp mayor que 0
 #Es la constante kb. Debe ser menor a 0 para que el sistema sea localmente estable.
@@ -83,17 +83,23 @@ xDescartados = []
 yDescartados = []
 # Arreglo que permite rastrear la ruta generada por el RRT
 track = []
+# Senal para saber si ya se esta corriendo la simulacion de ROS
+empezar = False
+# Boost para moverse mas rapido en camino antes de dirigirse al punto final
+pedal = 1 # 0.08
 
 # En este metodo se inicializa el nodo, se suscribe a los topicos necesarios, se crea la variable para publicar al
 # topico de motorsVel y tambien se lanza el nodo encargado de graficar. De igual forma ejecuta el metodo para el RRT y
 # antes de iniciar la accion de control muestra la ruta generada por el arbol. Es necesario cerrar la grafica de la ruta
 # generada para luego empezar a generar la accion de control y graficar la trayectoria real del robot.
 def punto2d():
-    global posicionActual, g, ruta, pubMot, arrivedP, p, umbralP, kp, posicionActual
+    global posicionActual, g, ruta, pubMot, arrivedP, p, umbralP, kp, posicionActual, empezar, pedal
     rospy.init_node('punto2d', anonymous=True)
     rospy.Subscriber ('InfoObs', Twist, setObst)
     rospy.Subscriber ('pioneerPosition', Twist, setPositionCallback)
     pubMot = rospy.Publisher ('motorsVel', Float32MultiArray, queue_size=10)
+    while not empezar:
+        empezar = empezar or False
     time.sleep (.1)  # Espera a que se actualice informacion de todos los obstaculos
     RRT(posicionActual.x, posicionActual.y, posicionFinal.x, posicionFinal.y)
     ruta = trackRoute()#  nx.astar_path(g,0, len(casillasRRT)-1 , heuristic=heuristic)
@@ -114,6 +120,7 @@ def punto2d():
                 iRuta = iRuta + 1
                 arrivedP = False
                 posInter = posicionFinal
+                pedal = 0
             elif iRuta < len(ruta)-1:
                 posInter = Posicion(casillasRRT[ruta[iRuta+1]].x, casillasRRT[ruta[iRuta+1]].y, math.atan2(casillasRRT[ruta[iRuta+1]].y-casillasRRT[ruta[iRuta]].y, casillasRRT[ruta[iRuta+1]].x-casillasRRT[ruta[iRuta]].x))
                 iRuta = iRuta + 1
@@ -128,12 +135,6 @@ def punto2d():
     mot.data[1] = 0
     pubMot.publish (mot)
 
-
-# Metodo que arroja la distancia euclidiana entre dos casillas segun su posicion exacta
-def heuristic(i, j):
-    global n
-    return math.sqrt((casillasRRT[i].x-casillasRRT[j].x)**2+(casillasRRT[i].y-casillasRRT[j].y)**2)
-
 # Metodo asociedo a topico para actualizar la posicon del pioneer
 def setPositionCallback(pos):
     global posicionActual
@@ -144,7 +145,7 @@ def setPositionCallback(pos):
 
 # Metodo asociedo a topico para actualizar la posicion de los obstaculos
 def setObst(posicionObstacle):
-    global twistInfoPos1, twistInfoPos2, twistInfoPos3, twistInfoPos4, twistInfoPos5
+    global twistInfoPos1, twistInfoPos2, twistInfoPos3, twistInfoPos4, twistInfoPos5, empezar
     if posicionObstacle.angular.x == 1 :
         twistInfoPos1=posicionObstacle
     elif posicionObstacle.angular.x == 2 :
@@ -155,6 +156,8 @@ def setObst(posicionObstacle):
         twistInfoPos4=posicionObstacle
     else:
         twistInfoPos5=posicionObstacle
+    if not empezar:
+        empezar = True
 
 # Metodo que genera el Rapidly Expanding Random Tree. Genera una secuencia de nodos aleatorios con los que saca una
 # linea a al mas cercanos del grafo y saca el punto en esta linea a cierta distancia, en caso de que este punto este
@@ -164,13 +167,13 @@ def RRT(xIni, yIni, xFin, yFin):
     g.add_node(0)
     track.append(-1)
     step = distanciaCuadricula
-    radioError = .25
+    radioError = 1 # .25
     casillasRRT.append(Casilla(xIni,yIni))
     contador = 1
     llego = False
     while not llego: # and contador != 20000:
-        xAleatorio = random.randrange(-500,500,1)/100
-        yAleatorio = random.randrange(-500,500,1)/100
+        xAleatorio = random.randrange(-4000,4000,1)/100
+        yAleatorio = random.randrange(-4000,4000,1)/100
         posCasillaCercana = posCasillaMasCercana(xAleatorio, yAleatorio)
         xCercana = casillasRRT[posCasillaCercana].x
         yCercana = casillasRRT[posCasillaCercana].y
@@ -238,13 +241,13 @@ def calcularDistancia(pos):
 
 #Aqui se calculan las velocidades de los motores que mueven al robot.
 def calcularVelocidades(pos):
-    global v,w,p,kp,ka,kb
+    global v,w,p,kp,ka,kb, pedal
     calcularDistancia(pos)
     calcularAngulos(pos)
     v = kp*p
     w = ka*a+kb*b
-    mot.data[0] = (v-l*w)/radioRueda
-    mot.data[1] =(v+l*w)/radioRueda
+    mot.data[0] = (v-l*w)/radioRueda + pedal
+    mot.data[1] =(v+l*w)/radioRueda + pedal
 
 #En este metodo se calculan los angulos a (alpha) y b (beta). Si el umbral se cumplio, las variables p (rho)
 #y a (alpha) se igualan a 0 para permitirle al robot girar y lograr orientarse de manera correcta.
@@ -257,7 +260,7 @@ def calcularAngulos(pos):
         p = 0
         a = 0
     b = posicionActual.teta-pos.teta - a
-    if b>math.pi:
+    if b>=math.pi:
         b = b-2*math.pi
     elif b<-math.pi:
         b = 2+math.pi+b

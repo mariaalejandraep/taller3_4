@@ -17,10 +17,10 @@ yActual = 0
 
 obs = []
 num = 0
-m = 0
-b = 0
-m2 = 0
-b2 = 0
+numRectas = 0
+
+m = []
+b = []
 
 ani = None
 
@@ -37,12 +37,23 @@ def graficar():
     plt.show()
 
 def ponerRectas(rectas):
-    global num, obs, m, b, m2, b2
+    global num, numRectas, obs, m, b
 
-    m = rectas.data[0]
-    b = rectas.data[1]
-    m2 = rectas.data[2]
-    b2 = rectas.data[3]
+    m[:] = []
+    b[:] = []
+
+    numRectas = len(rectas.data)/2.0
+    #rospy.loginfo(numRectas)
+
+    i = 0
+    while i < numRectas*2:
+
+        m.append(rectas.data[i])
+        b.append(rectas.data[i+1])
+
+        #rospy.loginfo(m)
+        #rospy.loginfo(b)
+        i = i+2
 
 def setNewPosition(pos):
     global xCord, yCord, xActual, yActual
@@ -68,16 +79,21 @@ def animate(i):
 
     i = 0
 
-    while i < 1:
+    rospy.loginfo("numRectas:{}".format(numRectas))
+    rospy.loginfo("lenm:{} y lenb:{}".format(len(m),len(b)))
+    #rospy.loginfo(m)
+    #rospy.loginfo(b)
 
-        x = np.linspace(-5,5,100)
-        y = x*m + b
-        y2 = x*m2 + b2
+    while i < numRectas:
 
-        axs.plot(x,y)
-        axs.plot(x,y2)
+        x = np.linspace(-5,5,10)
+        y = x*m[i] + b[i]
 
-        i = i+2
+        rospy.loginfo("i:{}".format(i))
+
+        axs.plot(x,y,'r')
+
+        i = i+1
 
 
     i = 0
