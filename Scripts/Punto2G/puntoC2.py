@@ -33,7 +33,7 @@ twistInfoPos4 = Twist()
 # Es la variable en donde se almacena la posicion y orientacion actual del obstaculo 5.
 twistInfoPos5 = Twist()
 # Distancia entre centro de cuadriculas, 10 debe ser divisible por esta distancia
-distanciaCuadricula = .8 #1
+distanciaCuadricula = .5#.8 #1
 # Numero de cuadriculas de la escena seleccionada
 n = int(80/distanciaCuadricula)
 # Arreglo con la informacion de cada una de las casillas
@@ -51,7 +51,7 @@ l = 0.19 # metros
 #Es la variable donde se almacena el valor de p (rho) que equivale a la distancia entre el punto actual y el final.
 p = 0
 #Es un umbral que se define para indicarle al robot cuando llega al punto final.
-umbralP = .3 # 0.3
+umbralP = math.sqrt ((0.51 / 2) ** 2 + 0.41 ** 2) # distanciaCuadricula/2
 #Es una variable booleana que indica que el robot ha llegado al punto final.
 arrivedP = False
 #Es la variable donde se guarda la distancia en x entre el punto actual y final.
@@ -66,11 +66,11 @@ b = 0
 # Equivale al angulo que se forma en el triangulo formado por el punto actual y final.
 t = 0
 #Es la constante kp. Debe ser mayor que 0 para que el sistema sea localmente estable.
-kp = 0.17 #0.4 # mayor que 0, antes era 0.1
+kp = 0.1 #0.4 # mayor que 0, antes era 0.1
 #Es la constante ka. ka-kp debe ser mayor que 0 para que el sistema sea localmente estable.
 ka = .5 # 1 # ka-kp mayor que 0, antes era 0.5
 #Es la constante kb. Debe ser menor a 0 para que el sistema sea localmente estable.
-kb = -0.01 # menor que 0
+kb = -0.01 # menor que 0, era negativo -0.1
 #Es la variable utilizada para publicar en el topico motorsVel la velocidad de cada motor.
 mot = Float32MultiArray()
 #En esta se almacenan las velocidades de cada motor.
@@ -78,7 +78,7 @@ mot.data = [0, 0]
 # Senal para saber si ya se esta corriendo la simulacion de ROS
 empezar = False
 # Boost para moverse mas rapido en camino antes de dirigirse al punto final
-pedal = 0.08
+pedal = 0# .5
 
 
 
@@ -93,8 +93,8 @@ def punto2c():
     pubMot = rospy.Publisher ('motorsVel', Float32MultiArray, queue_size=10)
     while not empezar:
         empezar = empezar or False
-    iniciarGraficador()
-    time.sleep (.1)  # Espera a que se actualice informacion de todos los obstaculos
+    # iniciarGraficador()
+    # time.sleep (.1)  # Espera a que se actualice informacion de todos los obstaculos
     creadorVerticesCasillas()
     creadorArcos()
     ruta = nx.astar_path(g,numCasillas(posicionActual.x,posicionActual.y),numCasillas(posicionFinal.x,posicionFinal.y) , heuristic=heuristic)
