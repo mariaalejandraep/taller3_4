@@ -29,15 +29,18 @@ num = 0
 iteraciones = 40
 xActual = 0
 yActual = 0
+pActual = 0
 mp = 0
 bp = 0
-umbralInlier = 0.01
-umbralPuntos = 10
+umbralInlier = 0.00001
+umbralPuntos = 5
 minimoInliers = 0
 rectas = Float32MultiArray()
 datosQuitar = []
 numQuitar = 0
 obsQuitar = []
+xmin = 20
+xmax = -20
 
 def on_press(key):
     global msg, vel
@@ -91,13 +94,15 @@ def actualizarObstaculos(puntos):
     calcularLineas()
 
 def setPositionCallback(pos):
-    global twistInfo, xActual, yActual
+    global twistInfo, xActual, yActual, pActual
     twistInfo = pos
     xActual = pos.linear.x
     yActual = pos.linear.y
+    pActual = pos.angular.z
 
 def calcularLineas():
     global num, obs, xActual, yActual, mp, bp, iteraciones, umbralInlier, rectas, datosQuitar, numQuitar, obsQuitar, minimoInliers,pubRectas
+    global xmin, xmax
 
     minimoInliers = num/10
 
@@ -117,7 +122,10 @@ def calcularLineas():
 
         i = 0
 
-        while i < iteraciones:
+        while i < iteraciones :
+
+            xmin = 20
+            xmax = -20
 
             datosQuitar[:] = obs[:]
             numQuitar = num
@@ -139,11 +147,11 @@ def calcularLineas():
             #rospy.loginfo("punto2:{}".format(punto2))
             d2 = obs[punto2+1]
 
-            x1 = xActual + d1*math.cos(p1)
-            y1 = yActual + d1*math.sin(p1)
+            x1 = xActual + d1*math.cos(p1+pActual)
+            y1 = yActual + d1*math.sin(p1+pActual)
 
-            x2 = xActual + d2*math.cos(p2)
-            y2 = yActual + d2*math.sin(p2)
+            x2 = xActual + d2*math.cos(p2+pActual)
+            y2 = yActual + d2*math.sin(p2+pActual)
 
             #rospy.loginfo("x1:{} y x2:{}; y1:{} y y2:{}".format(x1,x2,y1,y2))
 
@@ -159,8 +167,8 @@ def calcularLineas():
 
                 #rospy.loginfo("j:{} y lenObs:{} y num:{} y cantidad:{}".format(j,len(obs),num,cantidadInliers))
 
-                xj = xActual + dj*math.cos(pj)
-                yj = yActual + dj*math.sin(pj)
+                xj = xActual + dj*math.cos(pj+pActual)
+                yj = yActual + dj*math.sin(pj+pActual)
 
                 xe = (m1*yj-m1*b1+xj)/(1+m1**2)
                 ye = m1*xe+b1
@@ -174,6 +182,11 @@ def calcularLineas():
                     #datosQuitar[j+1] = 1
 
                     #datosQuitar[j:j+1] = []
+
+                    if (xmin > xj):
+                        xmin = xj
+                    if (xmax < xj):
+                        xmax = xj
 
                     datosQuitar.remove(pj)
                     datosQuitar.remove(dj)
@@ -210,12 +223,15 @@ def calcularLineas():
 
         rectas.data.append(mp)
         rectas.data.append(bp)
+        rectas.data.append(xmin)
+        rectas.data.append(xmax)
         #rospy.loginfo("num:{} y len:{}".format(num,len(rectas.data)))
         #rospy.loginfo("num:{} y lenObs:{}".format(num,len(obs)))
 
     pubRectas.publish(rectas)
-    rospy.loginfo(len(rectas.data)/2)
-
+    #rospy.loginfo(len(rectas.data)/2)
+    #rospy.loginfo(rectas)
+    #rospy.loginfo("xmin:{} y xmax:{}".format(xmin,xmax))
 
 if __name__ == '__main__':
     try:
