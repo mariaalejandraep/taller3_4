@@ -66,9 +66,9 @@ b = 0
 # Equivale al angulo que se forma en el triangulo formado por el punto actual y final.
 t = 0
 #Es la constante kp. Debe ser mayor que 0 para que el sistema sea localmente estable.
-kp = 0.15 #0.4 # mayor que 0, antes era 0.1
+kp = 0.17 #0.4 # mayor que 0, antes era 0.1
 #Es la constante ka. ka-kp debe ser mayor que 0 para que el sistema sea localmente estable.
-ka = .5# 1 # ka-kp mayor que 0, antes era 0.5
+ka = .5 # 1 # ka-kp mayor que 0, antes era 0.5
 #Es la constante kb. Debe ser menor a 0 para que el sistema sea localmente estable.
 kb = -0.01 # menor que 0
 #Es la variable utilizada para publicar en el topico motorsVel la velocidad de cada motor.
@@ -77,11 +77,7 @@ mot = Float32MultiArray()
 mot.data = [0, 0]
 # Senal para saber si ya se esta corriendo la simulacion de ROS
 empezar = False
-
-# kp = 0.1
-# ka = 0.5
-# umbralP = 0.3
-
+# Boost para moverse mas rapido en camino antes de dirigirse al punto final
 pedal = 0.08
 
 
@@ -101,7 +97,6 @@ def punto2c():
     time.sleep (.1)  # Espera a que se actualice informacion de todos los obstaculos
     creadorVerticesCasillas()
     creadorArcos()
-    print "Se crearon arcos"
     ruta = nx.astar_path(g,numCasillas(posicionActual.x,posicionActual.y),numCasillas(posicionFinal.x,posicionFinal.y) , heuristic=heuristic)
     if len(ruta)>1:
         teta = math.atan2(casillas[ruta[1]].y-casillas[ruta[0]].y, casillas[ruta[1]].x-casillas[ruta[0]].x)
@@ -190,8 +185,6 @@ def creadorVerticesCasillas():
 def creadorArcos():
     global n
     for i in range(0, n**2):
-        if i % 100 == 0:
-            print "Creando arcos fila:", i
         if casillas[i].libre:
             c = i%n
             f = i//n
@@ -260,7 +253,7 @@ def calcularDistancia(pos):
 
 #Aqui se calculan las velocidades de los motores que mueven al robot.
 def calcularVelocidades(pos):
-    global v,w,p,kp,ka,kb
+    global v,w,p,kp,ka,kb, pedal
     calcularDistancia(pos)
     calcularAngulos(pos)
     v = kp*p
