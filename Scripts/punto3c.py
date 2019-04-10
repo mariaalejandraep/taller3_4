@@ -12,6 +12,7 @@ from geometry_msgs.msg import Twist
 import random
 import math
 
+#Por ahora en 0
 vel = 2
 
 msg = Float32MultiArray()
@@ -31,7 +32,6 @@ yActual = 0
 mp = 0
 bp = 0
 umbralInlier = 0.1
-minimoInliers = 0.2
 rectas = Float32MultiArray()
 
 def on_press(key):
@@ -97,10 +97,10 @@ def calcularLineas():
 
     rectas.data[:] = []
 
-    rospy.loginfo("Rectas: ")
-    rospy.loginfo(rectas)
-
     while i < iteraciones:
+
+        maximoInlier = 0
+        cantidadInliers = 0
 
         punto1 = random.randint(0, num/2-1)*2
         punto2 = random.randint(0, num/2-1)*2
@@ -126,7 +126,6 @@ def calcularLineas():
         b1 = y1-m1*x1
 
         j = 0
-        cantidadInliers = 0
 
         while j < num:
 
@@ -150,14 +149,17 @@ def calcularLineas():
 
         #rospy.loginfo("Inliers:{}".format(cantidadInliers))
 
-        if (cantidadInliers > minimoInliers*num):
-            rectas.data.append(m1)
-            rectas.data.append(b1)
+        if (cantidadInliers > maximoInlier):
+            mp = m1
+            bp = b1
             #rospy.loginfo("mp:{} y bp:{}".format(mp,bp))
 
         i = i + 1
 
         #rospy.loginfo("punto1:{}, punto2:{} y num:{}".format(punto1,punto2,num))
+
+    rectas.data.append(mp)
+    rectas.data.append(bp)
 
 
 if __name__ == '__main__':
