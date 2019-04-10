@@ -14,17 +14,22 @@ xCord = []
 yCord = []
 xActual = 0
 yActual = 0
+pActual = 0
 
 obs = []
 num = 0
-m = 0
-b = 0
+numRectas = 0
+
+m = []
+b = []
+xmin = []
+xmax = []
 
 ani = None
 
 
 def graficar():
-    global fig, xCord, axs, ani
+    global fig, xCord, axs, ani, xmin, xmax
     fig = plt.figure()
     axs = fig.add_subplot(111)
     rospy.init_node('graficador3c', anonymous=True)
@@ -35,15 +40,34 @@ def graficar():
     plt.show()
 
 def ponerRectas(rectas):
-    global num, obs, m, b
+    global num, numRectas, obs, m, b, xmin, xmax
 
-    m = rectas.data[0]
-    b = rectas.data[1]
+    m[:] = []
+    b[:] = []
+    xmin[:] = []
+    xmax[:] = []
+
+    numRectas = len(rectas.data)/4.0
+    #rospy.loginfo(numRectas)
+
+    i = 0
+    while i < numRectas*4:
+
+        m.append(rectas.data[i])
+        b.append(rectas.data[i+1])
+        xmin.append(rectas.data[i+2])
+        xmax.append(rectas.data[i+3])
+
+        #rospy.loginfo(m)
+        #rospy.loginfo(b)
+        i = i+4
 
 def setNewPosition(pos):
-    global xCord, yCord, xActual, yActual
+    global xCord, yCord, xActual, yActual, pActual
     xActual = pos.linear.x
     yActual = pos.linear.y
+    pActual = pos.angular.z
+
     xCord.append(xActual)
     xCord = xCord[-100:]
     yCord.append(yActual)
@@ -56,7 +80,7 @@ def setObstacles(puntos):
     obs = puntos.data
 
 def animate(i):
-    global axs, xCord, yCord, num, m, b
+    global axs, xCord, yCord, num, m, b, xmin, xmax, xActual, yActual, pActual
     axs.clear()
     axs.axes.set_xlim(-5, 5)
     axs.axes.set_ylim(-5, 5)
@@ -64,14 +88,22 @@ def animate(i):
 
     i = 0
 
-    while i < 1:
+    #rospy.loginfo("numRectas:{}".format(numRectas))
+    #rospy.loginfo("lenm:{} y lenb:{}".format(len(m),len(b)))
+    #rospy.loginfo(m)
+    #rospy.loginfo(b)
 
-        x = np.linspace(-5,5,100)
-        y = x*m + b
+    while i < numRectas:
 
-        axs.plot(x,y)
+        x = np.linspace(xmin[i],xmax[i],10)
+        y = x*m[i] + b[i]
 
-        i = i+2
+        #rospy.loginfo("xmin:{} y xmax:{}".format(xmin,xmax))
+        rospy.loginfo("Entre")
+
+        axs.plot(x,y,'r')
+
+        i = i+1
 
 
     i = 0
@@ -80,10 +112,10 @@ def animate(i):
         p = obs[i]
         d = obs[i+1]
 
-        x = math.cos(p)*d
-        y = math.sin(p)*d
+        x = math.cos(p+pActual)*d
+        y = math.sin(p+pActual)*d
 
-        axs.scatter(x+xActual,y+yActual)
+        #axs.scatter(x+xActual,y+yActual)
 
         i = i+2
 
