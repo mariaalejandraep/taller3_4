@@ -13,7 +13,7 @@ import random
 import math
 
 #Por ahora en 0
-vel = 2
+vel = 0
 
 msg = Float32MultiArray()
 msg.data = [vel, vel]
@@ -33,6 +33,9 @@ mp = 0
 bp = 0
 umbralInlier = 0.1
 rectas = Float32MultiArray()
+datosQuitar = []
+numQuitar = 0
+obsQuitar = []
 
 def on_press(key):
     global msg, vel
@@ -80,7 +83,7 @@ def actualizarObstaculos(puntos):
     global num, obs
 
     num = puntos.layout.data_offset
-    obs = puntos.data
+    obs = list(puntos.data)
 
     calcularLineas()
 
@@ -91,75 +94,114 @@ def setPositionCallback(pos):
     yActual = pos.linear.y
 
 def calcularLineas():
-    global num, obs, xActual, yActual, mp, bp, iteraciones, umbralInlier, rectas
+    global num, obs, xActual, yActual, mp, bp, iteraciones, umbralInlier, rectas, datosQuitar, numQuitar, obsQuitar
 
     i = 0
 
     rectas.data[:] = []
 
-    while i < iteraciones:
+    #datosQuitar = obs
 
-        maximoInlier = 0
-        cantidadInliers = 0
+    rospy.loginfo("numObs comienzo:{}".format(num))
 
-        punto1 = random.randint(0, num/2-1)*2
-        punto2 = random.randint(0, num/2-1)*2
+    while num > 10:
 
-        while punto2 == punto1:
+        obsQuitar[:] = obs[:]
+        obsNumQuitar = num
+
+        while i < iteraciones:
+
+            datosQuitar[:] = obs[:]
+            numQuitar = num
+
+            maximoInlier = 0
+            cantidadInliers = 0
+
+            #rospy.loginfo("lenObs:{}, num:{} y numQuitar:{}".format(len(obs),num,numQuitar))
+            punto1 = random.randint(0, num/2-1)*2
             punto2 = random.randint(0, num/2-1)*2
 
-        p1 = obs[punto1]
-        d1 = obs[punto1+1]
+            while punto2 == punto1:
+                punto2 = random.randint(0, num/2-1)*2
 
-        p2 = obs[punto2]
-        d2 = obs[punto2+1]
+            p1 = obs[punto1]
+            d1 = obs[punto1+1]
 
-        x1 = xActual + d1*math.cos(p1)
-        y1 = yActual + d1*math.sin(p1)
+            p2 = obs[punto2]
+            #rospy.loginfo("punto2:{}".format(punto2))
+            d2 = obs[punto2+1]
 
-        x2 = xActual + d2*math.cos(p2)
-        y2 = yActual + d2*math.sin(p2)
+            x1 = xActual + d1*math.cos(p1)
+            y1 = yActual + d1*math.sin(p1)
 
-        #rospy.loginfo("x1:{} y x2:{}; y1:{} y y2:{}".format(x1,x2,y1,y2))
+            x2 = xActual + d2*math.cos(p2)
+            y2 = yActual + d2*math.sin(p2)
 
-        m1 = (y1-y2)/(x1-x2)
-        b1 = y1-m1*x1
+            #rospy.loginfo("x1:{} y x2:{}; y1:{} y y2:{}".format(x1,x2,y1,y2))
 
-        j = 0
+            m1 = (y1-y2)/(x1-x2)
+            b1 = y1-m1*x1
 
-        while j < num:
+            j = 0
 
-            pj = obs[j]
-            dj = obs[j+1]
+            while j < num:
 
-            xj = xActual + dj*math.cos(pj)
-            yj = yActual + dj*math.sin(pj)
+                pj = obs[j]
+                dj = obs[j+1]
 
-            xe = (m1*yj-m1*b1+xj)/(1+m1**2)
-            ye = m1*xe+b1
+                #rospy.loginfo("j:{} y lenObs:{} y num:{} y cantidad:{}".format(j,len(obs),num,cantidadInliers))
 
-            error = (ye-yj)**2+(xe-xj)**2
+                xj = xActual + dj*math.cos(pj)
+                yj = yActual + dj*math.sin(pj)
 
-            #rospy.loginfo("Error:{}".format(error))
+                xe = (m1*yj-m1*b1+xj)/(1+m1**2)
+                ye = m1*xe+b1
 
-            if(error < umbralInlier):
-                cantidadInliers = cantidadInliers+1
+                error = (ye-yj)**2+(xe-xj)**2
 
-            j = j+2
+                #rospy.loginfo("Error:{}".format(error))
 
-        #rospy.loginfo("Inliers:{}".format(cantidadInliers))
+                if(error < umbralInlier):
+                    #datosQuitar[j] = 1
+                    #datosQuitar[j+1] = 1
 
-        if (cantidadInliers > maximoInlier):
-            mp = m1
-            bp = b1
-            #rospy.loginfo("mp:{} y bp:{}".format(mp,bp))
+                    #datosQuitar[j:j+1] = []
 
-        i = i + 1
+                    datosQuitar.remove(pj)
+                    datosQuitar.remove(dj)
+                    #rospy.loginfo("lenObs:{} y lenQuitar:{}".format(len(obs), len(datosQuitar)))
+                    #datosQuitar.pop(j)
 
-        #rospy.loginfo("punto1:{}, punto2:{} y num:{}".format(punto1,punto2,num))
+                    numQuitar = numQuitar-2
+                    cantidadInliers = cantidadInliers+1
 
-    rectas.data.append(mp)
-    rectas.data.append(bp)
+                j = j+2
+
+            #rospy.loginfo("Inliers:{}".format(cantidadInliers))
+
+            if (cantidadInliers > maximoInlier):
+                mp = m1
+                bp = b1
+
+                obsQuitar[:] = datosQuitar[:]
+                obsNumQuitar = numQuitar
+                rospy.loginfo(cantidadInliers)
+                #num = numQuitar
+
+                #rospy.loginfo("num:{} y len:{}".format(num,len(obs)))
+                #rospy.loginfo("mp:{} y bp:{}".format(mp,bp))
+
+            i = i + 1
+
+            #rospy.loginfo("punto1:{}, punto2:{} y num:{}".format(punto1,punto2,num))
+
+        obs[:] = obsQuitar[:]
+        num = obsNumQuitar
+
+        rectas.data.append(mp)
+        rectas.data.append(bp)
+        #rospy.loginfo(rectas.data)
+        rospy.loginfo("num:{} y lenObs:{}".format(num,len(obs)))
 
 
 if __name__ == '__main__':

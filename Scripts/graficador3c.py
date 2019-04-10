@@ -19,6 +19,8 @@ obs = []
 num = 0
 m = 0
 b = 0
+m2 = 0
+b2 = 0
 
 ani = None
 
@@ -35,10 +37,12 @@ def graficar():
     plt.show()
 
 def ponerRectas(rectas):
-    global num, obs, m, b
+    global num, obs, m, b, m2, b2
 
     m = rectas.data[0]
     b = rectas.data[1]
+    m2 = rectas.data[2]
+    b2 = rectas.data[3]
 
 def setNewPosition(pos):
     global xCord, yCord, xActual, yActual
@@ -68,8 +72,10 @@ def animate(i):
 
         x = np.linspace(-5,5,100)
         y = x*m + b
+        y2 = x*m2 + b2
 
         axs.plot(x,y)
+        axs.plot(x,y2)
 
         i = i+2
 
