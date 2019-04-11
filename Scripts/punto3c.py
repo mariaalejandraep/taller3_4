@@ -41,6 +41,9 @@ numQuitar = 0
 obsQuitar = []
 xmin = 20
 xmax = -20
+xInlier = list()
+temp = list()
+umbralX = 0.2
 
 def on_press(key):
     global msg, vel
@@ -102,7 +105,7 @@ def setPositionCallback(pos):
 
 def calcularLineas():
     global num, obs, xActual, yActual, mp, bp, iteraciones, umbralInlier, rectas, datosQuitar, numQuitar, obsQuitar, minimoInliers,pubRectas
-    global xmin, xmax
+    global xmin, xmax, xInlier, temp
 
     minimoInliers = num/10
 
@@ -119,6 +122,7 @@ def calcularLineas():
         minimoInliers = num/10
         obsQuitar[:] = obs[:]
         obsNumQuitar = num
+        xInlier = list()
 
         i = 0
 
@@ -126,6 +130,8 @@ def calcularLineas():
 
             xmin = 20
             xmax = -20
+
+            temp = list()
 
             datosQuitar[:] = obs[:]
             numQuitar = num
@@ -183,10 +189,14 @@ def calcularLineas():
 
                     #datosQuitar[j:j+1] = []
 
-                    if (xmin > xj):
-                        xmin = xj
-                    if (xmax < xj):
-                        xmax = xj
+                    temp.append(xj)
+
+                    #rospy.loginfo(temp)
+
+                    #if (xmin > xj):
+                    #    xmin = xj
+                    #if (xmax < xj):
+                    #    xmax = xj
 
                     datosQuitar.remove(pj)
                     datosQuitar.remove(dj)
@@ -206,6 +216,10 @@ def calcularLineas():
 
                 #rospy.loginfo("Entre!")
 
+                xInlier[:] = temp[:]
+
+                #rospy.loginfo(xInlier)
+
                 obsQuitar[:] = datosQuitar[:]
                 obsNumQuitar = numQuitar
                 #rospy.loginfo(cantidadInliers)
@@ -221,10 +235,16 @@ def calcularLineas():
         obs[:] = obsQuitar[:]
         num = obsNumQuitar
 
-        rectas.data.append(mp)
-        rectas.data.append(bp)
-        rectas.data.append(xmin)
-        rectas.data.append(xmax)
+        #rospy.loginfo(xInlier)
+
+        if not (xInlier is None  or xInlier == []):
+            #rospy.loginfo("Entrreeeeee")
+            verificarX()
+            rectas.data.append(mp)
+            rectas.data.append(bp)
+            rectas.data.append(xmin)
+            rectas.data.append(xmax)
+
         #rospy.loginfo("num:{} y len:{}".format(num,len(rectas.data)))
         #rospy.loginfo("num:{} y lenObs:{}".format(num,len(obs)))
 
@@ -232,6 +252,36 @@ def calcularLineas():
     #rospy.loginfo(len(rectas.data)/2)
     #rospy.loginfo(rectas)
     #rospy.loginfo("xmin:{} y xmax:{}".format(xmin,xmax))
+
+def verificarX():
+    global xInlier, umbralX, xmin, xmax
+
+    #rospy.loginfo(xInlier)
+
+    #xInlier = xInlier.sort()
+
+    #rospy.loginfo(xInlier)
+
+    i = 0
+
+    while i < len(xInlier)-1:
+        x1 = xInlier[i]
+        x2 = xInlier[i+1]
+
+        dX = abs(x1-x2)
+
+        #rospy.loginfo("x1:{}, x2:{} y dX:{}".format(x1,x2,dX))
+
+        if(dX > umbralX):
+            xInlier = xInlier[0:i]
+            rospy.loginfo("DIFXENTRE. lenX:{} y i:{}".format(len(xInlier),i))
+            break
+
+        i = i+1
+
+    rospy.loginfo(len(xInlier))
+    xmin = xInlier[0]
+    xmax = xInlier[i]
 
 if __name__ == '__main__':
     try:
