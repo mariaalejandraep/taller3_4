@@ -12,6 +12,7 @@ xCord = []
 yCord = []
 xActual = 0
 yActual = 0
+pActual  = 0
 
 obs = []
 num = 0
@@ -36,9 +37,11 @@ def setObstacles(puntos):
     obs = puntos.data
 
 def setNewPosition(pos):
-    global xCord, yCord, xActual, yActual
+    global xCord, yCord, xActual, yActual, pActual
     xActual = pos.linear.x
     yActual = pos.linear.y
+    pActual = pos.angular.z
+
     xCord.append(xActual)
     xCord = xCord[-100:]
     yCord.append(yActual)
@@ -46,7 +49,7 @@ def setNewPosition(pos):
 
 
 def animate(i):
-    global axs, xCord, yCord, num
+    global axs, xCord, yCord, num, xActual, yActual, pActual
     axs.clear()
     axs.axes.set_xlim(-5, 5)
     axs.axes.set_ylim(-5, 5)
@@ -58,8 +61,8 @@ def animate(i):
         p = obs[i]
         d = obs[i+1]
 
-        x = math.cos(p)*d
-        y = math.sin(p)*d
+        x = math.cos(p+pActual)*d
+        y = math.sin(p+pActual)*d
 
         axs.scatter(x+xActual,y+yActual)
 

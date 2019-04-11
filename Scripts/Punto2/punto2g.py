@@ -6,6 +6,7 @@ from geometry_msgs.msg import Twist
 import matplotlib.pyplot as plt
 import networkx as nx
 import matplotlib.pyplot as plt
+import time
 # Clase que representa una casilla, tiene ubicacion o punto que la define (mitad) y si un objeto la cubre o no.
 class Casilla:
     def __init__(self, xP, yP):
@@ -66,7 +67,7 @@ b = 0
 # Equivale al angulo que se forma en el triangulo formado por el punto actual y final.
 t = 0
 #Es la constante kp. Debe ser mayor que 0 para que el sistema sea localmente estable.
-kp = 0.11 # mayor que 0
+kp = 0.4 # mayor que 0
 #Es la constante ka. ka-kp debe ser mayor que 0 para que el sistema sea localmente estable.
 ka = 0.5 # ka-kp mayor que 0
 #Es la constante kb. Debe ser menor a 0 para que el sistema sea localmente estable.
@@ -85,22 +86,19 @@ yDescartados = []
 track = []
 # Senal para saber si ya se esta corriendo la simulacion de ROS
 empezar = False
-# Boost para moverse mas rapido en camino antes de dirigirse al punto final
-pedal = 1 # 0.08
 
 # En este metodo se inicializa el nodo, se suscribe a los topicos necesarios, se crea la variable para publicar al
 # topico de motorsVel y tambien se lanza el nodo encargado de graficar. De igual forma ejecuta el metodo para el RRT y
 # antes de iniciar la accion de control muestra la ruta generada por el arbol. Es necesario cerrar la grafica de la ruta
 # generada para luego empezar a generar la accion de control y graficar la trayectoria real del robot.
 def punto2d():
-    global posicionActual, g, ruta, pubMot, arrivedP, p, umbralP, kp, posicionActual, empezar, pedal
-    rospy.init_node('punto2d', anonymous=True)
-    rospy.Subscriber ('InfoObs', Twist, setObst)
+    global posicionActual, g, ruta, pubMot, arrivedP, p, umbralP, kp, kb, posicionActual, empezar, pedal
+    rospy.init_node('punto2d', anonymous=True) #Se inicializa el nodo
+    rospy.Subscriber ('InfoObs', Twist, setObst) #Se subsccribe al topico que entrega informacion sobre los obstaculos
     rospy.Subscriber ('pioneerPosition', Twist, setPositionCallback)
     pubMot = rospy.Publisher ('motorsVel', Float32MultiArray, queue_size=10)
     while not empezar:
         empezar = empezar or False
-    time.sleep (.1)  # Espera a que se actualice informacion de todos los obstaculos
     RRT(posicionActual.x, posicionActual.y, posicionFinal.x, posicionFinal.y)
     ruta = trackRoute()#  nx.astar_path(g,0, len(casillasRRT)-1 , heuristic=heuristic)
     visualizacionPrevia(ruta)
@@ -120,14 +118,17 @@ def punto2d():
                 iRuta = iRuta + 1
                 arrivedP = False
                 posInter = posicionFinal
-                pedal = 0
+                umbralP = 0.1
             elif iRuta < len(ruta)-1:
                 posInter = Posicion(casillasRRT[ruta[iRuta+1]].x, casillasRRT[ruta[iRuta+1]].y, math.atan2(casillasRRT[ruta[iRuta+1]].y-casillasRRT[ruta[iRuta]].y, casillasRRT[ruta[iRuta+1]].x-casillasRRT[ruta[iRuta]].x))
                 iRuta = iRuta + 1
                 arrivedP = False
                 print iRuta
             elif iRuta == len(ruta):
-                fin = True
+                kb = -0.06
+                print abs (posicionFinal.teta - posicionActual.teta),
+                if abs (posicionFinal.teta - posicionActual.teta) < 0.1:
+                    fin = True
         calcularVelocidades(posInter)
         pubMot.publish(mot)
         rate.sleep()
@@ -137,7 +138,7 @@ def punto2d():
 
 # Metodo asociedo a topico para actualizar la posicon del pioneer
 def setPositionCallback(pos):
-    global posicionActual
+    global posicionActual, empezar
     posicionActual.x=pos.linear.x
     posicionActual.y=pos.linear.y
     posicionActual.teta=pos.angular.z
@@ -156,14 +157,16 @@ def setObst(posicionObstacle):
         twistInfoPos4=posicionObstacle
     else:
         twistInfoPos5=posicionObstacle
-    if not empezar:
+    if not empezar and twistInfoPos1.linear.z!=0 and twistInfoPos2.linear.z!=0 and twistInfoPos3.linear.z!=0 and twistInfoPos4.linear.z!=0:
         empezar = True
+
 
 # Metodo que genera el Rapidly Expanding Random Tree. Genera una secuencia de nodos aleatorios con los que saca una
 # linea a al mas cercanos del grafo y saca el punto en esta linea a cierta distancia, en caso de que este punto este
 # libre genera el vertice y arco con el nodo ya perteneciente y lo anade al grafo
 def RRT(xIni, yIni, xFin, yFin):
-    global g, distanciaCuadricula, xDescartados, yDescartados, track
+    global g, distanciaCuadricula, xDescartados, yDescartados, track,casillasRRT
+    start= time.time() #Se inicia temporzador
     g.add_node(0)
     track.append(-1)
     step = distanciaCuadricula
@@ -184,16 +187,17 @@ def RRT(xIni, yIni, xFin, yFin):
             g.add_node(contador)
             casillasRRT.append(Casilla(xPropuesto, yPropuesto))
             g.add_edge(posCasillaCercana,contador)
-            track.append (posCasillaCercana)
+            track.append (posCasillaCercana) #aqui se almacena la posicion mas cercana que permite llegar a cada nodo al siguiente
             contador = contador + 1
             if math.sqrt((xFin-xPropuesto)**2+(yFin-yPropuesto)**2)<=radioError:
                 llego = True
-            if contador%100==0:
-                print contador
         else:
             xDescartados.append(xPropuesto)
             yDescartados.append(yPropuesto)
-    print "Cantidad final de nodos: ",contador
+    end =time.time() #SE termina temporizador
+    temp_simp=end-start
+    print "Tiempo en el que calcula la ruta: ",temp_simp, " segundos"
+    print "Cantidad final de nodos creados: ",contador
 
 
 # Retorna la posicicion en el arreglo casillasRTT de la casilla mas cercana a la posicion (x,y) dada por parametro
@@ -201,7 +205,7 @@ def posCasillaMasCercana(x, y):
     global casillasRRT
     distancia = float('Inf')
     numCasilla = -1
-    for i in range(0, len(casillasRRT)):
+    for i in range(0, len(casillasRRT)):#Compara la posicion de todos los nodos creados con el aleatorio nuevo
         casillaActual = casillasRRT[i]
         distCasillaActual = math.sqrt((casillaActual.x-x)**2+(casillaActual.y-y)**2)
         if distCasillaActual < distancia:
@@ -213,7 +217,10 @@ def posCasillaMasCercana(x, y):
 # Metodo que dice si hay o no obstaculo para cierta posicion (x,y) del mapa, arroja True si no hay obstaculo y False
 # de lo contrario
 def libre(xCas, yCas):# Si se encuentra un obstaculo en ella
-    distanciaCarro = 0.27
+    if math.sqrt ((0.51 / 2) ** 2 + 0.41 ** 2) > distanciaCuadricula / math.sqrt (2):
+        distanciaCarro = math.sqrt ((0.51 / 2) ** 2 + 0.41 ** 2)  # 0.27
+    else:
+        distanciaCarro = distanciaCuadricula / math.sqrt (2)
     dist0 = math.sqrt ((twistInfoPos1.linear.x - xCas) ** 2 + (twistInfoPos1.linear.y - yCas) ** 2)
     dist1 = math.sqrt ((twistInfoPos2.linear.x - xCas) ** 2 + (twistInfoPos2.linear.y - yCas) ** 2)
     dist2 = math.sqrt ((twistInfoPos3.linear.x - xCas) ** 2 + (twistInfoPos3.linear.y - yCas) ** 2)
@@ -241,34 +248,43 @@ def calcularDistancia(pos):
 
 #Aqui se calculan las velocidades de los motores que mueven al robot.
 def calcularVelocidades(pos):
-    global v,w,p,kp,ka,kb, pedal
+    global v,w,p,kp,ka,kb
     calcularDistancia(pos)
     calcularAngulos(pos)
     v = kp*p
     w = ka*a+kb*b
-    mot.data[0] = (v-l*w)/radioRueda + pedal
-    mot.data[1] =(v+l*w)/radioRueda + pedal
+    mot.data[0] = (v-l*w)/radioRueda
+    mot.data[1] =(v+l*w)/radioRueda
 
 #En este metodo se calculan los angulos a (alpha) y b (beta). Si el umbral se cumplio, las variables p (rho)
 #y a (alpha) se igualan a 0 para permitirle al robot girar y lograr orientarse de manera correcta.
 def calcularAngulos(pos):
-    global p,a,b,t,arrivedP
-    t = math.atan2(dy,dx)
+    global p, a, b, t, arrivedP
+    t = math.atan2 (dy, dx)
     if not arrivedP:
         a = -posicionActual.teta + t
     else:
         p = 0
         a = 0
-    b = posicionActual.teta-pos.teta - a
-    if b>=math.pi:
-        b = b-2*math.pi
-    elif b<-math.pi:
-        b = 2+math.pi+b
+    if a > math.pi:
+        while a > math.pi:
+            a = a - 2 * math.pi
+    elif a < -math.pi:
+        while a < -math.pi:
+            a = a + 2 * math.pi
+    b = posicionActual.teta - pos.teta - a
+    if b >= math.pi:
+        while b >= math.pi:
+            b = b - 2 * math.pi
+    elif b < -math.pi:
+        while b < -math.pi:
+            b = b + 2 * math.pi
+    print b
 
 # Metodo que ejecuta nodo graficador usanto herramiento roslaunch, crea un nuevo proceso.
 def iniciarGraficador():
     package = 'taller3_4'
-    script = 'graficador2.py'
+    script = 'graficador.py'
     node = roslaunch.core.Node (package, script)
     launch = roslaunch.scriptapi.ROSLaunch ()
     launch.start ()
@@ -297,12 +313,16 @@ def visualizacionPrevia(path):
 
 # Obtener ruta la ruta del arbol generado por el RRT
 def trackRoute():
-    global track
+    global track,casillasRRT
     resp = []
-    i = len(track)-1
-    while i!=-1:
+    i = len(track)-1#Se sabe que la posicion final de track corresponde a la posicion justo antes de llegar al nodo final, por tanto se empieza ahi
+    dist_ruta=0 #SE inicializa la distancia de la ruta
+    while i!=-1: #Se frena en -1 debido a que la pacaosicion de la cual vino el nodo 0 es -1 debido a la inicializacion de track
         resp.insert(0, i)
+        j=i
         i =  track[i]
+        dist_ruta=dist_ruta+math.sqrt((casillasRRT[i].x-casillasRRT[j].x)**2+(casillasRRT[i].y-casillasRRT[j].y)**2)
+    print "La distancia al destino final es de: ", dist_ruta, " metros"
     return resp
 
 # Metodo main, cambio la posicion final en caso de que se pasen por parametro una nueva posicion y ejecuta el
@@ -319,3 +339,4 @@ if __name__ == '__main__':
         punto2d()
     except rospy.ROSInterruptException:
         pass
+
