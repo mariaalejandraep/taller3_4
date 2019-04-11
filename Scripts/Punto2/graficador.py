@@ -70,8 +70,8 @@ def animate(i):
     yCord.append (position.linear.y)
     # yCord = yCord[-100:]
     axs.clear()
-    axs.axes.set_xlim(-5, 5)
-    axs.axes.set_ylim(-5, 5)
+    axs.axes.set_xlim(-40, 40)
+    axs.axes.set_ylim(-40, 40)
     axs.add_artist (plt.Circle ((twistInfoPos1.linear.x, twistInfoPos1.linear.y), twistInfoPos1.linear.z/2, color='r'))
     axs.add_artist (plt.Circle ((twistInfoPos2.linear.x, twistInfoPos2.linear.y), twistInfoPos2.linear.z/2, color='r'))
     axs.add_artist (plt.Circle ((twistInfoPos3.linear.x, twistInfoPos3.linear.y), twistInfoPos3.linear.z/2, color='r'))

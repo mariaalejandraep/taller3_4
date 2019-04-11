@@ -278,7 +278,7 @@ def calcularAngulos(pos):
 # Metodo que ejecuta nodo graficador usanto herramiento roslaunch, crea un nuevo proceso.
 def iniciarGraficador():
     package = 'taller3_4'
-    script = 'graficador2.py'
+    script = 'graficador.py'
     node = roslaunch.core.Node (package, script)
     launch = roslaunch.scriptapi.ROSLaunch ()
     launch.start ()
