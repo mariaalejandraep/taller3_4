@@ -154,6 +154,8 @@ def definirMovimiento():
             ruta.push(punto1)
             ruta.push(punto2)
 
+            rospy.loginfo("X:{},Y:{}".format(punto1,punto2))
+    rospy.loginfo("fin Calculo ruta")
     done=True
 
 

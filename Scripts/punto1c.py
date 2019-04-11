@@ -158,10 +158,12 @@ def definirMovimiento():
                 punto2= llegueEnY[temp+(maxMapaX/2)-1][punto2+(maxMapaY/2)-1]
                 ruta.push(punto1)
                 ruta.push(punto2)
+        rospy.loginfo("longitud ruta:{}".format(ruta.size()))
         if ruta.size()<rutaMin.size():
             rutaMin=ruta
-            z=j
 
+            z=j
+    rospy.loginfo("longitud ruta minima:{}".format(rutaMin.size()))
     done=True
 
 
@@ -278,7 +280,10 @@ def pacman_controller_py():
                     a = [[False for x in range(maxMapaY)] for y in range(maxMapaX)]
                     llegueEnX = [[noLlego for x in range(maxMapaY)] for y in range(maxMapaX)]
                     llegueEnY= [[noLlego for x in range(maxMapaY)] for y in range(maxMapaX)]
-
+                    while ruta.isEmpty()==False:
+                        ruta.pop()
+                    while rutaMin.isEmpty()==False:
+                        rutaMin.pop()
 
             rate.sleep()
 
