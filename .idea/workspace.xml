@@ -12,7 +12,6 @@
       <change beforePath="$PROJECT_DIR$/Scripts/Punto2G/graficador2.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Scripts/Punto2G/puntoA2.py" beforeDir="false" afterPath="$PROJECT_DIR$/Scripts/Punto2/punto2a.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Scripts/Punto2G/puntoB2.py" beforeDir="false" afterPath="$PROJECT_DIR$/Scripts/Punto2/punto2b.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Scripts/Punto2G/puntoC2.py" beforeDir="false" afterPath="$PROJECT_DIR$/Scripts/Punto2/punto2c.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Scripts/Punto2G/puntoD2.py" beforeDir="false" afterPath="$PROJECT_DIR$/Scripts/Punto2/punto2e.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Scripts/graficador_punto_2.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Scripts/punto2PruebaGrafo.py" beforeDir="false" />
@@ -35,7 +34,17 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300" />
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/Scripts/Punto2/punto2c.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="454">
+              <caret line="53" column="5" lean-forward="true" selection-start-line="53" selection-start-column="5" selection-end-line="53" selection-end-column="5" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -172,6 +181,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="51" y="10" width="1229" height="790" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.2305141" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -344,13 +354,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Scripts/Punto2/punto2c.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="259">
-          <caret line="43" column="50" selection-start-line="43" selection-start-column="50" selection-end-line="43" selection-end-column="50" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Scripts/Punto2/punto2b.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="644">
@@ -362,6 +365,13 @@
       <provider selected="true" editor-type-id="text-editor">
         <state>
           <caret selection-end-line="330" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Scripts/Punto2/punto2c.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="454">
+          <caret line="53" column="5" lean-forward="true" selection-start-line="53" selection-start-column="5" selection-end-line="53" selection-end-column="5" />
         </state>
       </provider>
     </entry>
