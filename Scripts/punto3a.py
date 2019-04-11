@@ -74,5 +74,6 @@ if __name__ == '__main__':
                 pass
 
         robot_controller()
+        os.system("rosrun taller3_4 graficador3.py")
     except rospy.ROSInterruptException:
         pass
