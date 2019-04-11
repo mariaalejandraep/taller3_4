@@ -6,6 +6,7 @@ from geometry_msgs.msg import Twist
 import matplotlib.pyplot as plt
 import networkx as nx
 import matplotlib.pyplot as plt
+import time
 # Clase que representa una casilla, tiene ubicacion o punto que la define (mitad) y si un objeto la cubre o no.
 class Casilla:
     def __init__(self, xP, yP):
@@ -92,8 +93,8 @@ empezar = False
 # generada para luego empezar a generar la accion de control y graficar la trayectoria real del robot.
 def punto2d():
     global posicionActual, g, ruta, pubMot, arrivedP, p, umbralP, kp, kb, posicionActual, empezar, pedal
-    rospy.init_node('punto2d', anonymous=True)
-    rospy.Subscriber ('InfoObs', Twist, setObst)
+    rospy.init_node('punto2d', anonymous=True) #Se inicializa el nodo
+    rospy.Subscriber ('InfoObs', Twist, setObst) #Se subsccribe al topico que entrega informacion sobre los obstaculos
     rospy.Subscriber ('pioneerPosition', Twist, setPositionCallback)
     pubMot = rospy.Publisher ('motorsVel', Float32MultiArray, queue_size=10)
     while not empezar:
@@ -137,7 +138,7 @@ def punto2d():
 
 # Metodo asociedo a topico para actualizar la posicon del pioneer
 def setPositionCallback(pos):
-    global posicionActual
+    global posicionActual, empezar
     posicionActual.x=pos.linear.x
     posicionActual.y=pos.linear.y
     posicionActual.teta=pos.angular.z
@@ -156,14 +157,16 @@ def setObst(posicionObstacle):
         twistInfoPos4=posicionObstacle
     else:
         twistInfoPos5=posicionObstacle
-    if not empezar:
+    if not empezar and twistInfoPos1.linear.z!=0 and twistInfoPos2.linear.z!=0 and twistInfoPos3.linear.z!=0 and twistInfoPos4.linear.z!=0:
         empezar = True
+
 
 # Metodo que genera el Rapidly Expanding Random Tree. Genera una secuencia de nodos aleatorios con los que saca una
 # linea a al mas cercanos del grafo y saca el punto en esta linea a cierta distancia, en caso de que este punto este
 # libre genera el vertice y arco con el nodo ya perteneciente y lo anade al grafo
 def RRT(xIni, yIni, xFin, yFin):
-    global g, distanciaCuadricula, xDescartados, yDescartados, track
+    global g, distanciaCuadricula, xDescartados, yDescartados, track,casillasRRT
+    start= time.time() #Se inicia temporzador
     g.add_node(0)
     track.append(-1)
     step = distanciaCuadricula
@@ -184,14 +187,17 @@ def RRT(xIni, yIni, xFin, yFin):
             g.add_node(contador)
             casillasRRT.append(Casilla(xPropuesto, yPropuesto))
             g.add_edge(posCasillaCercana,contador)
-            track.append (posCasillaCercana)
+            track.append (posCasillaCercana) #aqui se almacena la posicion mas cercana que permite llegar a cada nodo al siguiente
             contador = contador + 1
             if math.sqrt((xFin-xPropuesto)**2+(yFin-yPropuesto)**2)<=radioError:
                 llego = True
         else:
             xDescartados.append(xPropuesto)
             yDescartados.append(yPropuesto)
-    print "Cantidad final de nodos: ",contador
+    end =time.time() #SE termina temporizador
+    temp_simp=end-start
+    print "Tiempo en el que calcula la ruta: ",temp_simp, " segundos"
+    print "Cantidad final de nodos creados: ",contador
 
 
 # Retorna la posicicion en el arreglo casillasRTT de la casilla mas cercana a la posicion (x,y) dada por parametro
@@ -199,7 +205,7 @@ def posCasillaMasCercana(x, y):
     global casillasRRT
     distancia = float('Inf')
     numCasilla = -1
-    for i in range(0, len(casillasRRT)):
+    for i in range(0, len(casillasRRT)):#Compara la posicion de todos los nodos creados con el aleatorio nuevo
         casillaActual = casillasRRT[i]
         distCasillaActual = math.sqrt((casillaActual.x-x)**2+(casillaActual.y-y)**2)
         if distCasillaActual < distancia:
@@ -242,7 +248,7 @@ def calcularDistancia(pos):
 
 #Aqui se calculan las velocidades de los motores que mueven al robot.
 def calcularVelocidades(pos):
-    global v,w,p,kp,ka,kb, pedal
+    global v,w,p,kp,ka,kb
     calcularDistancia(pos)
     calcularAngulos(pos)
     v = kp*p
@@ -307,12 +313,16 @@ def visualizacionPrevia(path):
 
 # Obtener ruta la ruta del arbol generado por el RRT
 def trackRoute():
-    global track
+    global track,casillasRRT
     resp = []
-    i = len(track)-1
-    while i!=-1:
+    i = len(track)-1#Se sabe que la posicion final de track corresponde a la posicion justo antes de llegar al nodo final, por tanto se empieza ahi
+    dist_ruta=0 #SE inicializa la distancia de la ruta
+    while i!=-1: #Se frena en -1 debido a que la pacaosicion de la cual vino el nodo 0 es -1 debido a la inicializacion de track
         resp.insert(0, i)
+        j=i
         i =  track[i]
+        dist_ruta=dist_ruta+math.sqrt((casillasRRT[i].x-casillasRRT[j].x)**2+(casillasRRT[i].y-casillasRRT[j].y)**2)
+    print "La distancia al destino final es de: ", dist_ruta, " metros"
     return resp
 
 # Metodo main, cambio la posicion final en caso de que se pasen por parametro una nueva posicion y ejecuta el
@@ -329,3 +339,4 @@ if __name__ == '__main__':
         punto2d()
     except rospy.ROSInterruptException:
         pass
+

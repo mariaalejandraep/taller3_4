@@ -143,9 +143,10 @@ def setPositionCallback(pos):
     posicionActual.teta=pos.angular.z
 
 
+
 # Metodo asociedo a topico para actualizar la posicion de los obstaculos
 def setObst(posicionObstacle):
-    global twistInfoPos1, twistInfoPos2, twistInfoPos3, twistInfoPos4, twistInfoPos5, empezar
+    global twistInfoPos1, twistInfoPos2, twistInfoPos3, twistInfoPos4, twistInfoPos5,  empezar
     if posicionObstacle.angular.x == 1 :
         twistInfoPos1=posicionObstacle
     elif posicionObstacle.angular.x == 2 :
@@ -156,7 +157,7 @@ def setObst(posicionObstacle):
         twistInfoPos4=posicionObstacle
     else:
         twistInfoPos5=posicionObstacle
-    if not empezar:
+    if not empezar and twistInfoPos1.linear.z!=0 and twistInfoPos2.linear.z!=0 and twistInfoPos3.linear.z!=0 and twistInfoPos4.linear.z!=0:
         empezar = True
 
 # Metodo que genera el Rapidly Expanding Random Tree. Genera una secuencia de nodos aleatorios con los que saca una
