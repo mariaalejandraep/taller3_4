@@ -2,30 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e86b60d7-0a2a-42f4-9d24-03f38deedc15" name="Default Changelist" comment="correccion">
-      <change afterPath="$PROJECT_DIR$/Scripts/Punto2/punto2g.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Scripts/Punto2/graficador.py" beforeDir="false" afterPath="$PROJECT_DIR$/Scripts/Punto2/graficador.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Scripts/Punto2/puntoA.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Scripts/Punto2/puntoB.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Scripts/Punto2/puntoC.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Scripts/Punto2/puntoD.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Scripts/Punto2G/graficador2.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Scripts/Punto2G/puntoA2.py" beforeDir="false" afterPath="$PROJECT_DIR$/Scripts/Punto2/punto2a.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Scripts/Punto2G/puntoB2.py" beforeDir="false" afterPath="$PROJECT_DIR$/Scripts/Punto2/punto2b.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Scripts/Punto2G/puntoD2.py" beforeDir="false" afterPath="$PROJECT_DIR$/Scripts/Punto2/punto2e.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Scripts/graficador_punto_2.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Scripts/punto2PruebaGrafo.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Scripts/punto2a.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Scripts/punto2bJDS.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Scripts/punto2c.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Scripts/punto2cJDS.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Scripts/punto2d.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Scripts/punto2dJDS.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Scripts/punto2dfinal.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/ros_pioneer_V1.ttt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/ros_pioneer_V1_prueba_final.ttt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/scene_punto2_final.ttt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/scene_punto2_grande.ttt" beforeDir="false" afterPath="$PROJECT_DIR$/resources/scene_punto2.ttt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Scripts/Punto2/punto2b.py" beforeDir="false" afterPath="$PROJECT_DIR$/Scripts/Punto2/punto2b.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Scripts/Punto2/punto2c.py" beforeDir="false" afterPath="$PROJECT_DIR$/Scripts/Punto2/punto2c.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Scripts/Punto2/punto2g.py" beforeDir="false" afterPath="$PROJECT_DIR$/Scripts/Punto2/punto2g.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -34,12 +14,33 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+    <leaf>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Scripts/Punto2/punto2b.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="2390">
+              <caret line="176" column="22" selection-start-line="176" selection-start-column="22" selection-end-line="176" selection-end-column="22" />
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Scripts/Punto2/punto2c.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="454">
-              <caret line="53" column="5" lean-forward="true" selection-start-line="53" selection-start-column="5" selection-end-line="53" selection-end-column="5" />
+            <state relative-caret-position="575">
+              <caret line="284" column="31" selection-start-line="284" selection-start-column="31" selection-end-line="284" selection-end-column="31" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Scripts/Punto2/punto2g.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="395">
+              <caret line="269" column="22" lean-forward="true" selection-start-line="269" selection-start-column="22" selection-end-line="269" selection-end-column="22" />
+              <folding>
+                <element signature="e#94#142#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -80,6 +81,7 @@
         <option value="$PROJECT_DIR$/Scripts/Punto2G/puntoD2.py" />
         <option value="$PROJECT_DIR$/Scripts/Punto2/puntoD2.py" />
         <option value="$PROJECT_DIR$/Scripts/Punto2/puntoC2.py" />
+        <option value="$PROJECT_DIR$/Scripts/Punto2/punto2b.py" />
         <option value="$PROJECT_DIR$/Scripts/Punto2/punto2g.py" />
         <option value="$PROJECT_DIR$/Scripts/Punto2/punto2c.py" />
       </list>
@@ -107,7 +109,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -140,6 +141,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -208,27 +210,9 @@
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$USER_HOME$/Desktop/taller3_4Seguridad/Scripts/punto2d.py" />
-    <entry file="file://$PROJECT_DIR$/Scripts/punto2d.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-330">
-          <caret line="373" lean-forward="true" selection-start-line="373" selection-end-line="373" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Scripts/punto2a.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="135">
-          <caret line="21" column="7" lean-forward="true" selection-start-line="21" selection-start-column="7" selection-end-line="21" selection-end-column="7" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Scripts/punto2bJDS.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret selection-end-line="155" selection-end-column="12" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/Scripts/punto2d.py" />
+    <entry file="file://$PROJECT_DIR$/Scripts/punto2a.py" />
+    <entry file="file://$PROJECT_DIR$/Scripts/punto2bJDS.py" />
     <entry file="file://$PROJECT_DIR$/../taller2_4/scripts/graficador.py">
       <provider selected="true" editor-type-id="text-editor">
         <state>
@@ -236,13 +220,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Scripts/punto2c.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-3165">
-          <caret line="60" column="35" lean-forward="true" selection-start-line="60" selection-start-column="35" selection-end-line="60" selection-end-column="35" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/Scripts/punto2c.py" />
     <entry file="file://$PROJECT_DIR$/../taller2_4/scripts/punto2.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1320">
@@ -253,61 +231,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Scripts/punto2cJDS.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret selection-end-line="259" selection-end-column="12" />
-          <folding>
-            <element signature="e#94#106#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/Scripts/punto2cJDS.py" />
     <entry file="file://$PROJECT_DIR$/Scripts/Punto2/__init__.py" />
-    <entry file="file://$PROJECT_DIR$/Scripts/punto2dfinal.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="360">
-          <caret line="96" selection-start-line="96" selection-end-line="96" selection-end-column="16" />
-          <folding>
-            <element signature="e#94#106#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Scripts/punto2dJDS.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="153" selection-start-line="153" selection-end-line="171" selection-end-column="14" />
-          <folding>
-            <element signature="e#94#106#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Scripts/Punto2/puntoA.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="30">
-          <caret line="2" selection-start-line="2" selection-end-line="3" selection-end-column="35" />
-          <folding>
-            <element signature="e#94#106#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Scripts/Punto2/puntoB.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-415">
-          <caret line="62" column="2" lean-forward="true" selection-start-line="62" selection-start-column="2" selection-end-line="62" selection-end-column="2" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Scripts/Punto2/graficador.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="619">
-          <caret line="73" column="29" selection-start-line="73" selection-start-column="29" selection-end-line="73" selection-end-column="29" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/Scripts/punto2dfinal.py" />
+    <entry file="file://$PROJECT_DIR$/Scripts/punto2dJDS.py" />
+    <entry file="file://$PROJECT_DIR$/Scripts/Punto2/puntoA.py" />
+    <entry file="file://$PROJECT_DIR$/Scripts/Punto2/puntoB.py" />
     <entry file="file://$PROJECT_DIR$/Scripts/Punto2/graficador.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-716">
@@ -315,49 +244,17 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Scripts/Punto2/puntoD.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="500">
-          <caret line="185" column="43" selection-start-line="185" selection-start-column="12" selection-end-line="185" selection-end-column="43" />
-          <folding>
-            <element signature="e#94#142#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/Scripts/Punto2/puntoD.py" />
     <entry file="file://$PROJECT_DIR$/Scripts/Punto2/punto2a.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-101" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Scripts/Punto2/puntoC.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1069">
-          <caret line="182" column="24" lean-forward="true" selection-start-line="182" selection-start-column="24" selection-end-line="182" selection-end-column="24" />
-          <folding>
-            <element signature="e#94#134#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/Scripts/Punto2/puntoC.py" />
     <entry file="file://$PROJECT_DIR$/../taller2_4/scripts/punto4.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="3420">
           <caret line="238" selection-start-line="238" selection-end-line="238" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Scripts/Punto2/punto2g.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-45">
-          <caret line="47" column="10" selection-start-line="47" selection-start-column="10" selection-end-line="47" selection-end-column="10" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Scripts/Punto2/punto2b.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="644">
-          <caret line="156" column="8" selection-start-line="156" selection-start-column="8" selection-end-line="156" selection-end-column="8" />
         </state>
       </provider>
     </entry>
@@ -368,10 +265,27 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/Scripts/Punto2/punto2b.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2390">
+          <caret line="176" column="22" selection-start-line="176" selection-start-column="22" selection-end-line="176" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Scripts/Punto2/punto2g.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="395">
+          <caret line="269" column="22" lean-forward="true" selection-start-line="269" selection-start-column="22" selection-end-line="269" selection-end-column="22" />
+          <folding>
+            <element signature="e#94#142#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/Scripts/Punto2/punto2c.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="454">
-          <caret line="53" column="5" lean-forward="true" selection-start-line="53" selection-start-column="5" selection-end-line="53" selection-end-column="5" />
+        <state relative-caret-position="575">
+          <caret line="284" column="31" selection-start-line="284" selection-start-column="31" selection-end-line="284" selection-end-column="31" />
         </state>
       </provider>
     </entry>

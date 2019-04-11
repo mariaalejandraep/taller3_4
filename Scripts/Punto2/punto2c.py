@@ -33,7 +33,7 @@ twistInfoPos4 = Twist()
 # Es la variable en donde se almacena la posicion y orientacion actual del obstaculo 5.
 twistInfoPos5 = Twist()
 # Distancia entre centro de cuadriculas, 10 debe ser divisible por esta distancia
-distanciaCuadricula = .5#.8 #1
+distanciaCuadricula = 0.5#.8 #1
 # Numero de cuadriculas de la escena seleccionada
 n = int(80/distanciaCuadricula)
 # Arreglo con la informacion de cada una de las casillas
@@ -283,7 +283,6 @@ def calcularAngulos(pos):
     elif b < -math.pi:
         while b < -math.pi:
             b = b + 2 * math.pi
-    print b
 
 
 # Metodo que ejecuta nodo graficador usanto herramiento roslaunch, crea un nuevo proceso.

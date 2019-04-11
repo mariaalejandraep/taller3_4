@@ -99,6 +99,7 @@ def punto2d():
     pubMot = rospy.Publisher ('motorsVel', Float32MultiArray, queue_size=10)
     while not empezar:
         empezar = empezar or False
+    # time.time(.1)
     RRT(posicionActual.x, posicionActual.y, posicionFinal.x, posicionFinal.y)
     ruta = trackRoute()#  nx.astar_path(g,0, len(casillasRRT)-1 , heuristic=heuristic)
     visualizacionPrevia(ruta)
@@ -111,7 +112,6 @@ def punto2d():
     iRuta = 0
     rate = rospy.Rate (10)
     fin = False
-    print len(ruta)
     while (not rospy.is_shutdown()) and (not fin):
         if arrivedP:
             if iRuta == len(ruta)-1:
@@ -123,10 +123,8 @@ def punto2d():
                 posInter = Posicion(casillasRRT[ruta[iRuta+1]].x, casillasRRT[ruta[iRuta+1]].y, math.atan2(casillasRRT[ruta[iRuta+1]].y-casillasRRT[ruta[iRuta]].y, casillasRRT[ruta[iRuta+1]].x-casillasRRT[ruta[iRuta]].x))
                 iRuta = iRuta + 1
                 arrivedP = False
-                print iRuta
             elif iRuta == len(ruta):
                 kb = -0.06
-                print abs (posicionFinal.teta - posicionActual.teta),
                 if abs (posicionFinal.teta - posicionActual.teta) < 0.1:
                     fin = True
         calcularVelocidades(posInter)
@@ -279,7 +277,6 @@ def calcularAngulos(pos):
     elif b < -math.pi:
         while b < -math.pi:
             b = b + 2 * math.pi
-    print b
 
 # Metodo que ejecuta nodo graficador usanto herramiento roslaunch, crea un nuevo proceso.
 def iniciarGraficador():
