@@ -66,7 +66,7 @@ b = 0
 # Equivale al angulo que se forma en el triangulo formado por el punto actual y final.
 t = 0
 #Es la constante kp. Debe ser mayor que 0 para que el sistema sea localmente estable.
-kp = 0.11 # mayor que 0
+kp = 0.4 # mayor que 0
 #Es la constante ka. ka-kp debe ser mayor que 0 para que el sistema sea localmente estable.
 ka = 0.5 # ka-kp mayor que 0
 #Es la constante kb. Debe ser menor a 0 para que el sistema sea localmente estable.
@@ -85,22 +85,19 @@ yDescartados = []
 track = []
 # Senal para saber si ya se esta corriendo la simulacion de ROS
 empezar = False
-# Boost para moverse mas rapido en camino antes de dirigirse al punto final
-pedal = 1 # 0.08
 
 # En este metodo se inicializa el nodo, se suscribe a los topicos necesarios, se crea la variable para publicar al
 # topico de motorsVel y tambien se lanza el nodo encargado de graficar. De igual forma ejecuta el metodo para el RRT y
 # antes de iniciar la accion de control muestra la ruta generada por el arbol. Es necesario cerrar la grafica de la ruta
 # generada para luego empezar a generar la accion de control y graficar la trayectoria real del robot.
 def punto2d():
-    global posicionActual, g, ruta, pubMot, arrivedP, p, umbralP, kp, posicionActual, empezar, pedal
+    global posicionActual, g, ruta, pubMot, arrivedP, p, umbralP, kp, kb, posicionActual, empezar, pedal
     rospy.init_node('punto2d', anonymous=True)
     rospy.Subscriber ('InfoObs', Twist, setObst)
     rospy.Subscriber ('pioneerPosition', Twist, setPositionCallback)
     pubMot = rospy.Publisher ('motorsVel', Float32MultiArray, queue_size=10)
     while not empezar:
         empezar = empezar or False
-    time.sleep (.1)  # Espera a que se actualice informacion de todos los obstaculos
     RRT(posicionActual.x, posicionActual.y, posicionFinal.x, posicionFinal.y)
     ruta = trackRoute()#  nx.astar_path(g,0, len(casillasRRT)-1 , heuristic=heuristic)
     visualizacionPrevia(ruta)
@@ -120,14 +117,17 @@ def punto2d():
                 iRuta = iRuta + 1
                 arrivedP = False
                 posInter = posicionFinal
-                pedal = 0
+                umbralP = 0.1
             elif iRuta < len(ruta)-1:
                 posInter = Posicion(casillasRRT[ruta[iRuta+1]].x, casillasRRT[ruta[iRuta+1]].y, math.atan2(casillasRRT[ruta[iRuta+1]].y-casillasRRT[ruta[iRuta]].y, casillasRRT[ruta[iRuta+1]].x-casillasRRT[ruta[iRuta]].x))
                 iRuta = iRuta + 1
                 arrivedP = False
                 print iRuta
             elif iRuta == len(ruta):
-                fin = True
+                kb = -0.06
+                print abs (posicionFinal.teta - posicionActual.teta),
+                if abs (posicionFinal.teta - posicionActual.teta) < 0.1:
+                    fin = True
         calcularVelocidades(posInter)
         pubMot.publish(mot)
         rate.sleep()
@@ -188,8 +188,6 @@ def RRT(xIni, yIni, xFin, yFin):
             contador = contador + 1
             if math.sqrt((xFin-xPropuesto)**2+(yFin-yPropuesto)**2)<=radioError:
                 llego = True
-            if contador%100==0:
-                print contador
         else:
             xDescartados.append(xPropuesto)
             yDescartados.append(yPropuesto)
@@ -213,7 +211,10 @@ def posCasillaMasCercana(x, y):
 # Metodo que dice si hay o no obstaculo para cierta posicion (x,y) del mapa, arroja True si no hay obstaculo y False
 # de lo contrario
 def libre(xCas, yCas):# Si se encuentra un obstaculo en ella
-    distanciaCarro = 0.27
+    if math.sqrt ((0.51 / 2) ** 2 + 0.41 ** 2) > distanciaCuadricula / math.sqrt (2):
+        distanciaCarro = math.sqrt ((0.51 / 2) ** 2 + 0.41 ** 2)  # 0.27
+    else:
+        distanciaCarro = distanciaCuadricula / math.sqrt (2)
     dist0 = math.sqrt ((twistInfoPos1.linear.x - xCas) ** 2 + (twistInfoPos1.linear.y - yCas) ** 2)
     dist1 = math.sqrt ((twistInfoPos2.linear.x - xCas) ** 2 + (twistInfoPos2.linear.y - yCas) ** 2)
     dist2 = math.sqrt ((twistInfoPos3.linear.x - xCas) ** 2 + (twistInfoPos3.linear.y - yCas) ** 2)
@@ -246,24 +247,33 @@ def calcularVelocidades(pos):
     calcularAngulos(pos)
     v = kp*p
     w = ka*a+kb*b
-    mot.data[0] = (v-l*w)/radioRueda + pedal
-    mot.data[1] =(v+l*w)/radioRueda + pedal
+    mot.data[0] = (v-l*w)/radioRueda
+    mot.data[1] =(v+l*w)/radioRueda
 
 #En este metodo se calculan los angulos a (alpha) y b (beta). Si el umbral se cumplio, las variables p (rho)
 #y a (alpha) se igualan a 0 para permitirle al robot girar y lograr orientarse de manera correcta.
 def calcularAngulos(pos):
-    global p,a,b,t,arrivedP
-    t = math.atan2(dy,dx)
+    global p, a, b, t, arrivedP
+    t = math.atan2 (dy, dx)
     if not arrivedP:
         a = -posicionActual.teta + t
     else:
         p = 0
         a = 0
-    b = posicionActual.teta-pos.teta - a
-    if b>=math.pi:
-        b = b-2*math.pi
-    elif b<-math.pi:
-        b = 2+math.pi+b
+    if a > math.pi:
+        while a > math.pi:
+            a = a - 2 * math.pi
+    elif a < -math.pi:
+        while a < -math.pi:
+            a = a + 2 * math.pi
+    b = posicionActual.teta - pos.teta - a
+    if b >= math.pi:
+        while b >= math.pi:
+            b = b - 2 * math.pi
+    elif b < -math.pi:
+        while b < -math.pi:
+            b = b + 2 * math.pi
+    print b
 
 # Metodo que ejecuta nodo graficador usanto herramiento roslaunch, crea un nuevo proceso.
 def iniciarGraficador():

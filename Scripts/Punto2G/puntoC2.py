@@ -77,8 +77,6 @@ mot = Float32MultiArray()
 mot.data = [0, 0]
 # Senal para saber si ya se esta corriendo la simulacion de ROS
 empezar = False
-# Boost para moverse mas rapido en camino antes de dirigirse al punto final
-pedal = 0# .5
 
 
 
@@ -93,8 +91,7 @@ def punto2c():
     pubMot = rospy.Publisher ('motorsVel', Float32MultiArray, queue_size=10)
     while not empezar:
         empezar = empezar or False
-    # iniciarGraficador()
-    # time.sleep (.1)  # Espera a que se actualice informacion de todos los obstaculos
+    iniciarGraficador()
     creadorVerticesCasillas()
     creadorArcos()
     ruta = nx.astar_path(g,numCasillas(posicionActual.x,posicionActual.y),numCasillas(posicionFinal.x,posicionFinal.y) , heuristic=heuristic)
@@ -112,14 +109,14 @@ def punto2c():
                 iRuta = iRuta + 1
                 arrivedP = False
                 posInter = posicionFinal
-                pedal = 0
+                umbralP = 0.1
             elif iRuta < len(ruta)-1:
                 posInter = Posicion(casillas[ruta[iRuta+1]].x, casillas[ruta[iRuta+1]].y, math.atan2(casillas[ruta[iRuta+1]].y-casillas[ruta[iRuta]].y, casillas[ruta[iRuta+1]].x-casillas[ruta[iRuta]].x))
                 iRuta = iRuta + 1
                 arrivedP = False
             elif iRuta == len(ruta):
-                kb = 0.08
-                if abs( posicionFinal.teta - posicionActual.teta ) < 0.09:
+                kb = -0.06
+                if abs( posicionFinal.teta - posicionActual.teta ) < 0.1:
                     fin = True
         calcularVelocidades(posInter)
         pubMot.publish(mot)
@@ -134,16 +131,16 @@ def heuristic(i, j):
     global n
     return math.sqrt((i%n-j%n)**2+(i//n-j//n)**2)
 
+
 # Busca la casilla mas cercana para dos coordenadas en la distribucion
 def numCasillas(x, y):
-    dist = float('Inf')
-    indice = -1
-    for i in range(0, n**2):
-        distancia = math.sqrt((casillas[i].x-x)**2+(casillas[i].y-y)**2)
-        if distancia<dist:
-            indice = i
-            dist = distancia
-    return indice
+    global distanciaCuadricula
+    difX = 40 + x
+    difY = 40 - y
+    numCasX = difX // distanciaCuadricula
+    numCasY = difY // distanciaCuadricula
+    return int(numCasX + numCasY * n)
+
 
 # Metodo asociedo a topico para actualizar la posicon del pioneer
 def setPositionCallback(pos):
@@ -260,8 +257,8 @@ def calcularVelocidades(pos):
     calcularAngulos(pos)
     v = kp*p
     w = ka*a+kb*b
-    mot.data[0] = (v-l*w)/radioRueda + pedal
-    mot.data[1] =(v+l*w)/radioRueda + pedal
+    mot.data[0] = (v-l*w)/radioRueda
+    mot.data[1] =(v+l*w)/radioRueda
 
 #En este metodo se calculan los angulos a (alpha) y b (beta). Si el umbral se cumplio, las variables p (rho)
 #y a (alpha) se igualan a 0 para permitirle al robot girar y lograr orientarse de manera correcta.
@@ -280,12 +277,13 @@ def calcularAngulos(pos):
         while a < -math.pi:
             a = a + 2 * math.pi
     b = posicionActual.teta-pos.teta - a
-    if b > math.pi:
-        while b > math.pi:
+    if b >= math.pi:
+        while b >= math.pi:
             b = b - 2 * math.pi
     elif b < -math.pi:
         while b < -math.pi:
             b = b + 2 * math.pi
+    print b
 
 
 # Metodo que ejecuta nodo graficador usanto herramiento roslaunch, crea un nuevo proceso.

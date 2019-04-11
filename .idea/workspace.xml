@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="e86b60d7-0a2a-42f4-9d24-03f38deedc15" name="Default Changelist" comment="correccion">
       <change beforePath="$PROJECT_DIR$/Scripts/Punto2G/puntoC2.py" beforeDir="false" afterPath="$PROJECT_DIR$/Scripts/Punto2G/puntoC2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Scripts/Punto2G/puntoD2.py" beforeDir="false" afterPath="$PROJECT_DIR$/Scripts/Punto2G/puntoD2.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -15,20 +16,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Scripts/Punto2G/puntoC2.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="410">
-              <caret line="72" column="5" selection-start-line="72" selection-start-column="5" selection-end-line="72" selection-end-column="5" />
-              <folding>
-                <element signature="e#8602#8639#0" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../taller2_4/scripts/punto4.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="3090">
-              <caret line="238" lean-forward="true" selection-start-line="238" selection-end-line="238" />
+            <state relative-caret-position="785">
+              <caret line="182" lean-forward="true" selection-start-line="182" selection-end-line="182" />
             </state>
           </provider>
         </entry>
@@ -36,8 +25,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Scripts/Punto2G/puntoD2.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="3540">
-              <caret line="241" column="8" selection-start-line="241" selection-start-column="8" selection-end-line="241" selection-end-column="8" />
+            <state relative-caret-position="244">
+              <caret line="119" column="29" lean-forward="true" selection-start-line="119" selection-start-column="16" selection-end-line="119" selection-end-column="29" />
             </state>
           </provider>
         </entry>
@@ -334,27 +323,24 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Scripts/Punto2G/puntoD2.py">
+    <entry file="file://$PROJECT_DIR$/../taller2_4/scripts/punto4.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3540">
-          <caret line="241" column="8" selection-start-line="241" selection-start-column="8" selection-end-line="241" selection-end-column="8" />
+        <state relative-caret-position="3420">
+          <caret line="238" selection-start-line="238" selection-end-line="238" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../taller2_4/scripts/punto4.py">
+    <entry file="file://$PROJECT_DIR$/Scripts/Punto2G/puntoD2.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3090">
-          <caret line="238" lean-forward="true" selection-start-line="238" selection-end-line="238" />
+        <state relative-caret-position="244">
+          <caret line="119" column="29" lean-forward="true" selection-start-line="119" selection-start-column="16" selection-end-line="119" selection-end-column="29" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Scripts/Punto2G/puntoC2.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="410">
-          <caret line="72" column="5" selection-start-line="72" selection-start-column="5" selection-end-line="72" selection-end-column="5" />
-          <folding>
-            <element signature="e#8602#8639#0" />
-          </folding>
+        <state relative-caret-position="785">
+          <caret line="182" lean-forward="true" selection-start-line="182" selection-end-line="182" />
         </state>
       </provider>
     </entry>
