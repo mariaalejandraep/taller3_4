@@ -66,11 +66,11 @@ b = 0
 # Equivale al angulo que se forma en el triangulo formado por el punto actual y final.
 t = 0
 #Es la constante kp. Debe ser mayor que 0 para que el sistema sea localmente estable.
-kp = 0.1 #0.4 # mayor que 0, antes era 0.1
+kp = 0.4 #0.4 # mayor que 0, antes era 0.1
 #Es la constante ka. ka-kp debe ser mayor que 0 para que el sistema sea localmente estable.
-ka = .5 # 1 # ka-kp mayor que 0, antes era 0.5
+ka = 0.5 # 1 # ka-kp mayor que 0, antes era 0.5
 #Es la constante kb. Debe ser menor a 0 para que el sistema sea localmente estable.
-kb = -0.01 # menor que 0, era negativo -0.1
+kb = 0.01 # menor que 0, era negativo -0.1
 #Es la variable utilizada para publicar en el topico motorsVel la velocidad de cada motor.
 mot = Float32MultiArray()
 #En esta se almacenan las velocidades de cada motor.
@@ -86,7 +86,7 @@ pedal = 0# .5
 # topico de motorsVel y tambien se lanza el nodo encargado de graficar. Ademas es el metodo encargado de realizar
 # las acciones de control necesarias segun la ruta dada para llevar el robot a la posicion final.
 def punto2c():
-    global posicionActual, g, ruta, pubMot, arrivedP, p, umbralP, kp, ka, empezar, pedal
+    global posicionActual, g, ruta, pubMot, arrivedP, p, umbralP, kp, kb, ka, empezar, pedal
     rospy.init_node('punto2c', anonymous=True)
     rospy.Subscriber ('InfoObs', Twist, setObst)
     rospy.Subscriber ('pioneerPosition', Twist, setPositionCallback)
@@ -118,7 +118,9 @@ def punto2c():
                 iRuta = iRuta + 1
                 arrivedP = False
             elif iRuta == len(ruta):
-                fin = True
+                kb = 0.08
+                if abs( posicionFinal.teta - posicionActual.teta ) < 0.09:
+                    fin = True
         calcularVelocidades(posInter)
         pubMot.publish(mot)
         rate.sleep()
@@ -271,11 +273,20 @@ def calcularAngulos(pos):
     else:
         p = 0
         a = 0
+    if a > math.pi:
+        while a > math.pi:
+            a = a - 2 * math.pi
+    elif a < -math.pi:
+        while a < -math.pi:
+            a = a + 2 * math.pi
     b = posicionActual.teta-pos.teta - a
-    if b>math.pi:
-        b = b-2*math.pi
-    elif b<-math.pi:
-        b = 2+math.pi+b
+    if b > math.pi:
+        while b > math.pi:
+            b = b - 2 * math.pi
+    elif b < -math.pi:
+        while b < -math.pi:
+            b = b + 2 * math.pi
+
 
 # Metodo que ejecuta nodo graficador usanto herramiento roslaunch, crea un nuevo proceso.
 def iniciarGraficador():
