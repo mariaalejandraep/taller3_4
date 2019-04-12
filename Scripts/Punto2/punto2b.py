@@ -13,8 +13,7 @@ class Casilla:
         self.y=float(yP)
         self.libre=pE
 
-#l = math.sqrt(np.power(0.38/2,2)+np.power(0.51/2,2)) #metros
-l=0.27
+
 # Grafo de networkx con informacion de vertices y arcos
 g=nx.Graph()
 # Es la variable en donde se almacena la posicion y orientacion actual del obstaculo 1.
@@ -73,8 +72,8 @@ def creadorVerticesCasillas():
         nuevaCasilla = Casilla(xInic+mod*distanciaCuadricula,yInic-div*distanciaCuadricula, libre(xInic+mod*distanciaCuadricula,yInic-div*distanciaCuadricula) )
         Equivalente[div].append(nuevaCasilla)
 
-# Crea los arcos entre los vertices creados en el grafo, solo es necesario recorrer la mitad de la matriz debido a que
-# es un grafo no dirigido
+# Crea los arcos entre los vertices creados en el grafo, solo es necesario revisar los nodos que pueden ser vecinos, en
+# de que ambos esten vacios genera el arco.
 def creadorArcos():
     global n
     # El ciclo revisa cada uno de los nodos del grafo
@@ -179,6 +178,9 @@ if __name__ == '__main__':
         # Se espera a que se publique por primera vez a traves del topico
         while not empezar:
             empezar = empezar or False
+        # Como medida de seguridad se espera .1 segundos para asegurarse de que si se actulizaron los valores de los
+        # obstaculos
+        time.sleep(.1)
         # Se crean los vertices y casillas del grafo y matriz respectivamente
         creadorVerticesCasillas()
         # Se crean los arcos del grafo
