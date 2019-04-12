@@ -34,7 +34,7 @@ pActual = 0
 mp = 0
 bp = 0
 umbralInlier = 0.00001
-umbralPuntos = 10
+umbralPuntos = 8
 minimoInliers = 0
 rectas = Float32MultiArray()
 datosQuitar = []
@@ -49,6 +49,7 @@ dInlier = list()
 tempX = list()
 tempY = list()
 tempP = list()
+tempD = list()
 umbralX = 0.1
 umbralY = 0.4
 dX = 0
@@ -114,9 +115,16 @@ def setPositionCallback(pos):
 
 def calcularLineas():
     global num, obs, xActual, yActual, mp, bp, iteraciones, umbralInlier, rectas, datosQuitar, numQuitar, obsQuitar, minimoInliers,pubRectas
-    global xmin, xmax, xInlier, yInlier, pInlier, dInlier, tempX, tempY, tempP
+    global xmin, xmax, xInlier, yInlier, pInlier, dInlier, tempX, tempY, tempP, tempD
+
+    #rospy.loginfo("Entre principio")
 
     minimoInliers = num/10
+    #
+    # if minimoInliers > 8:
+    #     minimoInliers = 8
+
+    #minimoInliers = 0
 
     rectas.data[:] = []
 
@@ -124,13 +132,20 @@ def calcularLineas():
 
     #rospy.loginfo("numObs comienzo:{}".format(num))
 
-    while num > umbralPuntos:
+    while num > umbralPuntos*2:
 
-        rospy.loginfo("num:{}, lenObs:{} y umbral:{}".format(num,len(obs),umbralPuntos))
+        #rospy.loginfo("num:{}, lenObs:{} y umbral:{}".format(num,len(obs),umbralPuntos))
 
         minimoInliers = num/10
+
+        if minimoInliers > 10:
+            minimoInliers = 10
+
         #obsQuitar[:] = obs[:]
         #obsNumQuitar = num
+
+       # rospy.loginfo("Entre umbral.")
+
         xInlier = list()
         yInlier = list()
         pInlier = list()
@@ -139,6 +154,8 @@ def calcularLineas():
         i = 0
 
         while i < iteraciones :
+
+            #rospy.loginfo("Entre iteraciones.")
 
             xmin = 20
             xmax = -20
@@ -161,6 +178,8 @@ def calcularLineas():
             while punto2 == punto1:
                 punto2 = random.randint(0, num/2-1)*2
 
+            #rospy.loginfo("punto 1:{} y punto 2:{}".format(punto1,punto2))
+
             p1 = obs[punto1]
             d1 = obs[punto1+1]
 
@@ -179,6 +198,8 @@ def calcularLineas():
             m1 = (y1-y2)/(x1-x2)
             b1 = y1-m1*x1
 
+            #rospy.loginfo("m1:{} y b1:{}".format(m1,b1))
+
             j = 0
 
             while j < num:
@@ -195,6 +216,8 @@ def calcularLineas():
                 ye = m1*xe+b1
 
                 error = (ye-yj)**2+(xe-xj)**2
+
+                #rospy.loginfo("Error:{}".format(error))
 
                 #rospy.loginfo("Error:{}".format(error))
 
@@ -225,7 +248,7 @@ def calcularLineas():
 
                 j = j+2
 
-            rospy.loginfo("Inliers:{} y num:{} y minimo:{}".format(cantidadInliers,num,minimoInliers))
+            #rospy.loginfo("Inliers:{} y num:{} y minimo:{}".format(cantidadInliers,num,minimoInliers))
 
 
             if (cantidadInliers > maximoInlier and cantidadInliers > minimoInliers):
@@ -269,7 +292,7 @@ def calcularLineas():
             #obsNumQuitar = len(xInlier)
             n = len(xInlier)
 
-            rospy.loginfo("n:{}".format(n))
+            #rospy.loginfo("n:{} y i:{}".format(n,i))
 
             if(n > minimoInliers):
                 #mp = m1
@@ -335,6 +358,33 @@ def verificar():
     #rospy.loginfo("A")
     #rospy.loginfo(len(xInlier))
 
+    n = len(xInlier)
+
+    x1 = xInlier[l]
+    x2 = xInlier[l+1]
+
+    y1 = yInlier[l]
+    y2 = yInlier[l+1]
+
+    dX = abs(x1-x2)
+    dY = abs(y1-y2)
+
+    if(dX > umbralX):
+        xInlier = xInlier[1:n]
+        yInlier = yInlier[1:n]
+        pInlier = pInlier[1:n]
+        dInlier = dInlier[1:n]
+        #rospy.loginfo("DIFXENTRE. lenX:{} y i:{}".format(len(xInlier),i))
+
+    if(dY > umbralY):
+        xInlier = xInlier[1:n]
+        yInlier = yInlier[1:n]
+        pInlier = pInlier[1:n]
+        dInlier = dInlier[1:n]
+        #rospy.loginfo("DIFXENTRE. lenX:{} y i:{}".format(len(xInlier),i))
+
+    l = l+1
+
     while l < len(xInlier)-1:
         x1 = xInlier[l]
         x2 = xInlier[l+1]
@@ -347,7 +397,7 @@ def verificar():
 
         #rospy.loginfo("x1:{}, x2:{}, dX:{} y l:{}".format(x1,x2,dX,l))
         #rospy.loginfo("y1:{}, y2:{} y dY:{}".format(y1,y2,dY))
-        rospy.loginfo("dX:{} y dY:{}".format(dX,dY))
+        #rospy.loginfo("dX:{} y dY:{}".format(dX,dY))
 
         if(dX > umbralX):
             xInlier = xInlier[0:l]
