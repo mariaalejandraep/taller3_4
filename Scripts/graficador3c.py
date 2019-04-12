@@ -92,6 +92,9 @@ def animate(i):
     #rospy.loginfo("lenm:{} y lenb:{}".format(len(m),len(b)))
     #rospy.loginfo(m)
     #rospy.loginfo(b)
+    rospy.loginfo("anm")
+    rospy.sleep(1)
+    rospy.loginfo("anajnfuwq")
 
     while i < numRectas:
 
@@ -99,9 +102,10 @@ def animate(i):
         y = x*m[i] + b[i]
 
         #rospy.loginfo("xmin:{} y xmax:{}".format(xmin,xmax))
-        rospy.loginfo("Entre")
+        #rospy.loginfo("Entre")
 
         axs.plot(x,y,'r')
+        rospy.loginfo("imprimi")
 
         i = i+1
 
