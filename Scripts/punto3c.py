@@ -76,7 +76,7 @@ def ThreadInputs():
 
 
 def robot_controller():
-    global msg, twistInfo, done, pubRectas
+    global msg, twistInfo, done, pubRectas, pub
     rospy.init_node('robot_controller', anonymous=True)
     rospy.Subscriber('pioneerPosition', Twist, setPositionCallback)
     rospy.Subscriber('scanner', Float32MultiArray, actualizarObstaculos)
@@ -89,7 +89,7 @@ def robot_controller():
 
     while not rospy.is_shutdown():
         #calcularLineas()
-        pub.publish(msg)
+        #pub.publish(msg)
         #pubRectas.publish(rectas)
         #rospy.loginfo("len:{}".format(len(rectas.data)/2))
         #contador = contador + 1
@@ -126,7 +126,7 @@ def calcularLineas():
 
     while num > umbralPuntos:
 
-        #rospy.loginfo(num)
+        rospy.loginfo("num:{}, lenObs:{} y umbral:{}".format(num,len(obs),umbralPuntos))
 
         minimoInliers = num/10
         #obsQuitar[:] = obs[:]
@@ -225,7 +225,8 @@ def calcularLineas():
 
                 j = j+2
 
-            #rospy.loginfo("Inliers:{} y num:{} y minimo:{}".format(cantidadInliers,num,minimoInliers))
+            rospy.loginfo("Inliers:{} y num:{} y minimo:{}".format(cantidadInliers,num,minimoInliers))
+
 
             if (cantidadInliers > maximoInlier and cantidadInliers > minimoInliers):
                 #mp = m1
@@ -268,7 +269,9 @@ def calcularLineas():
             #obsNumQuitar = len(xInlier)
             n = len(xInlier)
 
-            if(len(xInlier) > minimoInliers):
+            rospy.loginfo("n:{}".format(n))
+
+            if(n > minimoInliers):
                 #mp = m1
                 #bp = b1
 
@@ -277,7 +280,7 @@ def calcularLineas():
 
                 #mp = np.multiply(xInlier,yInlier)
 
-                rospy.loginfo("m:{} y b:{}".format(mp,bp))
+                #rospy.loginfo("m:{} y b:{}".format(mp,bp))
 
                 # rospy.loginfo("Empiezo")
                 # rospy.loginfo(len(mp))
@@ -309,7 +312,9 @@ def calcularLineas():
 
         #num = num-obsNumQuitar
 
+    rospy.loginfo("Publicando")
     pubRectas.publish(rectas)
+    pub.publish(msg)
     #rospy.loginfo(len(rectas.data)/2)
     #rospy.loginfo(rectas)
     #rospy.loginfo("xmin:{} y xmax:{}".format(xmin,xmax))
@@ -342,7 +347,7 @@ def verificar():
 
         #rospy.loginfo("x1:{}, x2:{}, dX:{} y l:{}".format(x1,x2,dX,l))
         #rospy.loginfo("y1:{}, y2:{} y dY:{}".format(y1,y2,dY))
-        #rospy.loginfo("dX:{} y dY:{}".format(dX,dY))
+        rospy.loginfo("dX:{} y dY:{}".format(dX,dY))
 
         if(dX > umbralX):
             xInlier = xInlier[0:l]

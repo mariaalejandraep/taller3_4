@@ -92,9 +92,6 @@ def animate(i):
     #rospy.loginfo("lenm:{} y lenb:{}".format(len(m),len(b)))
     #rospy.loginfo(m)
     #rospy.loginfo(b)
-    rospy.loginfo("anm")
-    rospy.sleep(1)
-    rospy.loginfo("anajnfuwq")
 
     while i < numRectas:
 
