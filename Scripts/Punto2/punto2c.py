@@ -87,11 +87,11 @@ def punto2c():
     global posicionActual, g, ruta, pubMot, arrivedP, p, umbralP, kp, kb, ka, empezar, pedal
     # Se crean el nodo
     rospy.init_node('punto2c', anonymous=True)
-
-    rospy.Subscriber ('InfoObs', Twist, setObst)
     # Se suscribe a al topico de la informacion de los obstaculos
-    rospy.Subscriber ('pioneerPosition', Twist, setPositionCallback)
+    rospy.Subscriber ('InfoObs', Twist, setObst)
     # Se suscribe a al topico de la informacion de la posicion del pioneer
+    rospy.Subscriber ('pioneerPosition', Twist, setPositionCallback)
+    # Se crea referencia a topico para publicar velocidad de los motores
     pubMot = rospy.Publisher ('motorsVel', Float32MultiArray, queue_size=10)
     # Se espera a que se publique por primera vez a traves del topico
     while not empezar:
