@@ -23,7 +23,7 @@ C) Dependencias:
 	import matplotlib.animation as animation
 	from geometry_msgs.msg import Twist
 
-D) Dependencias:
+E) Dependencias:
 	Por punto:
 	import rospy, math, sys, roslaunch, time, random
 	from std_msgs.msg import Float32MultiArray
@@ -34,3 +34,4 @@ D) Dependencias:
 	Por graficador:
 	import matplotlib.animation as animation
 	from geometry_msgs.msg import Twist
+	Recordar que para que empiece a avanzar el robot se debe cerrar la primera gráfica que aparece

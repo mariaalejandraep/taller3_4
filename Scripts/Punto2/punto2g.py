@@ -99,7 +99,7 @@ def punto2d():
     pubMot = rospy.Publisher ('motorsVel', Float32MultiArray, queue_size=10)
     while not empezar:
         empezar = empezar or False
-    # time.time(.1)
+    time.sleep(.1)
     RRT(posicionActual.x, posicionActual.y, posicionFinal.x, posicionFinal.y)
     ruta = trackRoute()#  nx.astar_path(g,0, len(casillasRRT)-1 , heuristic=heuristic)
     visualizacionPrevia(ruta)
@@ -314,7 +314,7 @@ def trackRoute():
     resp = []
     i = len(track)-1#Se sabe que la posicion final de track corresponde a la posicion justo antes de llegar al nodo final, por tanto se empieza ahi
     dist_ruta=0 #SE inicializa la distancia de la ruta
-    while i!=-1: #Se frena en -1 debido a que la pacaosicion de la cual vino el nodo 0 es -1 debido a la inicializacion de track
+    while i!=-1: #Se frena en -1 debido a que la posicion de la cual vino el nodo 0 es -1 debido a la inicializacion de track
         resp.insert(0, i)
         j=i
         i =  track[i]
