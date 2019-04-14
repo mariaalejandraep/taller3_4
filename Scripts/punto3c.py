@@ -12,6 +12,7 @@ from geometry_msgs.msg import Twist
 import random
 import math
 import numpy as np
+import roslaunch
 
 #Por ahora en 0
 vel = 2
@@ -29,16 +30,16 @@ numActualizado = 0
 obsActualizado = []
 obs = []
 num = 0
-iteraciones = 5
+iteraciones = 40
 xActual = 0
 yActual = 0
 pActual = 0
 mp = 0
 bp = 0
 umbralInlier = 0.00001
-umbralPuntos = 8
+umbralPuntos = 4
 minimoInliers = 0
-maximoIteraciones = 200
+maximoIteraciones = 10*iteraciones
 rectas = Float32MultiArray()
 datosQuitar = []
 numQuitar = 0
@@ -59,23 +60,20 @@ dX = 0
 dY = 0
 teclas = [0,0,0,0]
 v0 = [1,1]
-h = 5
+h = 15
 
 def on_press(key):
     global msg, vel, teclas, v0
 
     if key == Key.up:
-        #vel = abs(vel)
         teclas[0] = 1
     if key == Key.down:
         vel = -abs(vel)
         teclas[1] = 1
     if key == Key.right:
         teclas[2] = 1
-        #v0 = [0.8,0.2]
     if key == Key.left:
         teclas[3] = 1
-        #v0 = [0.2,0.8]
 
 
 def on_release(key):
@@ -124,14 +122,23 @@ def ThreadInputs():
 
 
 def robot_controller():
-    global msg, twistInfo, done, pubRectas, pub, v0, h, rectas, msg
+    global msg, twistInfo, done, pubRectas, pub, v0, h, rectas, msg, thread
     rospy.init_node('robot_controller', anonymous=True)
     rospy.Subscriber('pioneerPosition', Twist, setPositionCallback)
     rospy.Subscriber('scanner', Float32MultiArray, actualizarObstaculos)
     pub = rospy.Publisher('motorsVel', Float32MultiArray, queue_size=10)
     pubRectas = rospy.Publisher('rectas', Float32MultiArray, queue_size=10)
-    threading.Thread(target=ThreadInputs).start()
+    thread = threading.Thread(target=ThreadInputs)
+    thread.start()
     rate = rospy.Rate(h)
+
+    package = 'taller3_4'
+    script = 'graficador3c.py'
+    node = roslaunch.core.Node(package,script)
+    launch = roslaunch.scriptapi.ROSLaunch()
+    launch.start()
+
+    process = launch.launch(node)
 
     while not rospy.is_shutdown():
         definirMovimiento()
@@ -139,6 +146,8 @@ def robot_controller():
         pubRectas.publish(rectas)
         pub.publish(msg)
         rate.sleep()
+
+    #thread.stop_event.set()
 
 def actualizarObstaculos(puntos):
     global numActualizado, obsActualizado

@@ -8,8 +8,6 @@ import math
 
 fig = None
 axs = None
-xCord = []
-yCord = []
 xActual = 0
 yActual = 0
 pActual  = 0
@@ -42,18 +40,18 @@ def setNewPosition(pos):
     yActual = pos.linear.y
     pActual = pos.angular.z
 
-    xCord.append(xActual)
-    xCord = xCord[-100:]
-    yCord.append(yActual)
-    yCord = yCord[-100:]
+    # xCord.append(xActual)
+    # xCord = xCord[-100:]
+    # yCord.append(yActual)
+    # yCord = yCord[-100:]
 
 
 def animate(i):
-    global axs, xCord, yCord, num, xActual, yActual, pActual
+    global axs, num, xActual, yActual, pActual
     axs.clear()
     axs.axes.set_xlim(-5, 5)
     axs.axes.set_ylim(-5, 5)
-    axs.plot(xCord, yCord)
+    axs.scatter(xActual, yActual, c = 'b')
 
     i = 0
 
@@ -64,7 +62,7 @@ def animate(i):
         x = math.cos(p+pActual)*d
         y = math.sin(p+pActual)*d
 
-        axs.scatter(x+xActual,y+yActual)
+        axs.scatter(x+xActual,y+yActual, c = 'r')
 
         i = i+2
 
