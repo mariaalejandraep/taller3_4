@@ -1,6 +1,9 @@
 # taller3_4
 Punto 1:
-
+A) comando de ejecución:
+rosrun taller3_4 punto1a.py
+C) comando de ejecución
+rosrun taller3_4 punto1c.py
 Punto 2:
 A) Dependencias:
 	import rospy 
