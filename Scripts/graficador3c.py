@@ -77,7 +77,7 @@ def animate(i):
 
         i = i+1
 
-    plt.title('Posicion en tiempo real del Robot y líneas detectadas')
+    plt.title('Posicion en tiempo real del Robot y lineas detectadas')
     plt.grid()
 
 
