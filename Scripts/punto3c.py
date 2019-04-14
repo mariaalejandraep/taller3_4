@@ -17,7 +17,7 @@ import numpy as np
 vel = 2
 
 msg = Float32MultiArray()
-msg.data = [vel, vel]
+msg.data = [0, 0]
 twistInfo = Twist()
 fig = None
 axs = None
@@ -36,6 +36,7 @@ bp = 0
 umbralInlier = 0.00001
 umbralPuntos = 8
 minimoInliers = 0
+maximoIteraciones = 200
 rectas = Float32MultiArray()
 datosQuitar = []
 numQuitar = 0
@@ -54,22 +55,68 @@ umbralX = 0.1
 umbralY = 0.4
 dX = 0
 dY = 0
+teclas = [0,0,0,0]
+v0 = [1,1]
 
 def on_press(key):
-    global msg, vel
+    global msg, vel, teclas, v0
+
+    if key == Key.up:
+        #vel = abs(vel)
+        teclas[0] = 1
+    if key == Key.down:
+        vel = -abs(vel)
+        teclas[1] = 1
     if key == Key.right:
-        msg.data = [0.8 * vel, 0.2 * vel]
-    elif key == Key.left:
-        msg.data = [0.2 * vel, 0.8 * vel]
-    elif key == Key.down:
-        msg.data = [-vel, -vel]
+        teclas[2] = 1
+        #v0 = [0.8,0.2]
+    if key == Key.left:
+        teclas[3] = 1
+        #v0 = [0.2,0.8]
 
 
 def on_release(key):
-    global msg, vel
-    if key == Key.down or key == Key.right or key == Key.left:
-        msg.data = [vel, vel]
+    # pass
+    global msg, vel, teclas, v0
+    # if key == Key.down or key == Key.right or key == Key.left or key == Key.up:
+    #     msg.data = [0,0]
+    if key == Key.up:
+        teclas[0] = 0
+    if key == Key.down:
+        teclas[1] = 0
+    if key == Key.right:
+        teclas[2] = 0
+    if key == Key.left:
+        teclas[3] = 0
 
+def definirMovimiento():
+    global vel, v0, teclas, msg
+
+    if teclas[2] == 1:
+        v0 = [0.8,0.2]
+    elif teclas[3] == 0:
+        v0 = [1,1]
+
+    if teclas[3] == 1:
+        v0 = [0.2,0.8]
+    elif teclas[2] == 0:
+        v0 = [1,1]
+
+    if teclas[0] == 1:
+        vel = abs(vel)
+    elif teclas[1] == 0:
+        v0 = [0,0]
+
+    if teclas[1] == 1:
+        vel = -abs(vel)
+    elif teclas[0] == 0:
+        v0 = [0,0]
+
+    if teclas[0] == 1 and teclas[1] == 1:
+        v0 = [0,0]
+
+
+    msg.data = [v0[0]*vel, v0[1]*vel]
 
 def ThreadInputs():
     with Listener(on_press=on_press, on_release=on_release) as listener:
@@ -77,7 +124,7 @@ def ThreadInputs():
 
 
 def robot_controller():
-    global msg, twistInfo, done, pubRectas, pub
+    global msg, twistInfo, done, pubRectas, pub,v0
     rospy.init_node('robot_controller', anonymous=True)
     rospy.Subscriber('pioneerPosition', Twist, setPositionCallback)
     rospy.Subscriber('scanner', Float32MultiArray, actualizarObstaculos)
@@ -95,6 +142,7 @@ def robot_controller():
         #rospy.loginfo("len:{}".format(len(rectas.data)/2))
         #contador = contador + 1
         #if contador == 3:
+        definirMovimiento()
         pubPosicion.publish(twistInfo)
         #    contador = 0
         rate.sleep()
@@ -115,11 +163,12 @@ def setPositionCallback(pos):
 
 def calcularLineas():
     global num, obs, xActual, yActual, mp, bp, iteraciones, umbralInlier, rectas, datosQuitar, numQuitar, obsQuitar, minimoInliers,pubRectas
-    global xmin, xmax, xInlier, yInlier, pInlier, dInlier, tempX, tempY, tempP, tempD
+    global xmin, xmax, xInlier, yInlier, pInlier, dInlier, tempX, tempY, tempP, tempD, maximoIteraciones
 
     #rospy.loginfo("Entre principio")
 
     minimoInliers = num/10
+    m = 0
     #
     # if minimoInliers > 8:
     #     minimoInliers = 8
@@ -132,7 +181,7 @@ def calcularLineas():
 
     #rospy.loginfo("numObs comienzo:{}".format(num))
 
-    while num > umbralPuntos*2:
+    while num > umbralPuntos*2 and m < maximoIteraciones:
 
         #rospy.loginfo("num:{}, lenObs:{} y umbral:{}".format(num,len(obs),umbralPuntos))
 
@@ -329,6 +378,8 @@ def calcularLineas():
                 rectas.data.append(xmin)
                 rectas.data.append(xmax)
 
+            m = m+1
+
         #rospy.loginfo("num:{} y len:{}".format(num,len(rectas.data)))
         #rospy.loginfo("num:{} y lenObs:{}".format(num,len(obs)))
         #obs[:] = obsQuitar[:]
@@ -429,7 +480,6 @@ if __name__ == '__main__':
         if len(sys.argv) > 1:
             try:
                 vel = float(sys.argv[1])
-                msg.data = [vel, vel]
             except ValueError:
                 pass
 

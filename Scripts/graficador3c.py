@@ -63,15 +63,15 @@ def ponerRectas(rectas):
         i = i+4
 
 def setNewPosition(pos):
-    global xCord, yCord, xActual, yActual, pActual
+    global xActual, yActual, pActual
     xActual = pos.linear.x
     yActual = pos.linear.y
     pActual = pos.angular.z
 
-    xCord.append(xActual)
-    xCord = xCord[-100:]
-    yCord.append(yActual)
-    yCord = yCord[-100:]
+    # xCord.append(xActual)
+    # xCord = xCord[-100:]
+    # yCord.append(yActual)
+    # yCord = yCord[-100:]
 
 def setObstacles(puntos):
     global num, obs
@@ -84,7 +84,7 @@ def animate(i):
     axs.clear()
     axs.axes.set_xlim(-5, 5)
     axs.axes.set_ylim(-5, 5)
-    axs.plot(xCord, yCord)
+    axs.scatter(xActual, yActual)
 
     i = 0
 
@@ -107,18 +107,18 @@ def animate(i):
         i = i+1
 
 
-    i = 0
-
-    while i < num:
-        p = obs[i]
-        d = obs[i+1]
-
-        x = math.cos(p+pActual)*d
-        y = math.sin(p+pActual)*d
-
-        #axs.scatter(x+xActual,y+yActual)
-
-        i = i+2
+    # i = 0
+    #
+    # while i < num:
+    #     p = obs[i]
+    #     d = obs[i+1]
+    #
+    #     x = math.cos(p+pActual)*d
+    #     y = math.sin(p+pActual)*d
+    #
+    #     axs.scatter(x+xActual,y+yActual)
+    #
+    #     i = i+2
 
     plt.title('Posicion en tiempo real de Robot')
     plt.grid()
