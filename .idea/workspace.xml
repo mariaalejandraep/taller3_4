@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e86b60d7-0a2a-42f4-9d24-03f38deedc15" name="Default Changelist" comment="correccion">
-      <change beforePath="$PROJECT_DIR$/Scripts/Punto2/punto2b.py" beforeDir="false" afterPath="$PROJECT_DIR$/Scripts/Punto2/punto2b.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Scripts/Punto2/punto2c.py" beforeDir="false" afterPath="$PROJECT_DIR$/Scripts/Punto2/punto2c.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -12,34 +12,17 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.4742952">
-      <split-first>
-        <leaf>
-          <file pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/Scripts/Punto2/punto2b.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-105">
-                  <caret line="140" column="30" lean-forward="true" selection-start-line="140" selection-start-column="30" selection-end-line="140" selection-end-column="30" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-        </leaf>
-      </split-first>
-      <split-second>
-        <leaf>
-          <file pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/Scripts/Punto2/punto2c.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="2000">
-                  <caret line="367" column="103" selection-start-line="367" selection-start-column="103" selection-end-line="367" selection-end-column="103" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-        </leaf>
-      </split-second>
-    </splitter>
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/Scripts/Punto2/punto2c.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="615">
+              <caret line="138" column="23" lean-forward="true" selection-start-line="138" selection-start-column="23" selection-end-line="138" selection-end-column="23" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -92,33 +75,24 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="283" />
-    <option name="y" value="-14" />
+  <component name="ProjectFrameBounds" extendedState="4">
+    <option name="x" value="51" />
+    <option name="y" value="24" />
     <option name="width" value="614" />
-    <option name="height" value="762" />
+    <option name="height" value="776" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
             <path>
               <item name="taller3_4" type="b2602c69:ProjectViewProjectNode" />
               <item name="taller3_4" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="taller3_4" type="b2602c69:ProjectViewProjectNode" />
-              <item name="taller3_4" type="462c0819:PsiDirectoryNode" />
-              <item name="resources" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="taller3_4" type="b2602c69:ProjectViewProjectNode" />
-              <item name="taller3_4" type="462c0819:PsiDirectoryNode" />
-              <item name="results" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="taller3_4" type="b2602c69:ProjectViewProjectNode" />
@@ -135,7 +109,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -177,7 +150,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="51" y="10" width="1229" height="790" extended-state="6" />
+    <frame x="51" y="24" width="614" height="776" extended-state="4" />
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.2305141" />
@@ -298,8 +271,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Scripts/Punto2/punto2c.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2000">
-          <caret line="367" column="103" selection-start-line="367" selection-start-column="103" selection-end-line="367" selection-end-column="103" />
+        <state relative-caret-position="615">
+          <caret line="138" column="23" lean-forward="true" selection-start-line="138" selection-start-column="23" selection-end-line="138" selection-end-column="23" />
         </state>
       </provider>
     </entry>

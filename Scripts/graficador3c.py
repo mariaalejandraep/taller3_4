@@ -4,20 +4,12 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Float32MultiArray
-import math
-
-import numpy as np
 
 fig = None
 axs = None
-xCord = []
-yCord = []
 xActual = 0
 yActual = 0
-pActual = 0
 
-obs = []
-num = 0
 numRectas = 0
 
 m = []
@@ -27,15 +19,13 @@ xmax = []
 
 ani = None
 
-
 def graficar():
     global fig, xCord, axs, ani, xmin, xmax
     fig = plt.figure()
     axs = fig.add_subplot(111)
     rospy.init_node('graficador3c', anonymous=True)
-    rospy.Subscriber('topico_Posicion', Twist, setNewPosition)
+    rospy.Subscriber('pioneerPosition', Twist, setNewPosition)
     rospy.Subscriber('rectas', Float32MultiArray, ponerRectas)
-    rospy.Subscriber('scanner', Float32MultiArray, setObstacles)
     ani = animation.FuncAnimation(fig, animate)
     plt.show()
 
@@ -48,7 +38,6 @@ def ponerRectas(rectas):
     xmax[:] = []
 
     numRectas = len(rectas.data)/4.0
-    #rospy.loginfo(numRectas)
 
     i = 0
     while i < numRectas*4:
@@ -57,70 +46,38 @@ def ponerRectas(rectas):
         b.append(rectas.data[i+1])
         xmin.append(rectas.data[i+2])
         xmax.append(rectas.data[i+3])
-
-        #rospy.loginfo(m)
-        #rospy.loginfo(b)
         i = i+4
 
 def setNewPosition(pos):
-    global xCord, yCord, xActual, yActual, pActual
+    global xActual, yActual
     xActual = pos.linear.x
     yActual = pos.linear.y
-    pActual = pos.angular.z
-
-    xCord.append(xActual)
-    xCord = xCord[-100:]
-    yCord.append(yActual)
-    yCord = yCord[-100:]
-
-def setObstacles(puntos):
-    global num, obs
-
-    num = puntos.layout.data_offset
-    obs = puntos.data
 
 def animate(i):
-    global axs, xCord, yCord, num, m, b, xmin, xmax, xActual, yActual, pActual
+    global axs, m, b, xmin, xmax, xActual, yActual
+
     axs.clear()
     axs.axes.set_xlim(-5, 5)
     axs.axes.set_ylim(-5, 5)
-    axs.plot(xCord, yCord)
+
+    axs.scatter(xActual, yActual, c='b')
 
     i = 0
-
-    #rospy.loginfo("numRectas:{}".format(numRectas))
-    #rospy.loginfo("lenm:{} y lenb:{}".format(len(m),len(b)))
-    #rospy.loginfo(m)
-    #rospy.loginfo(b)
 
     while i < numRectas:
 
-        x = np.linspace(xmin[i],xmax[i],10)
-        y = x*m[i] + b[i]
+        x1 = xmin[i]
+        x2 = xmax[i]
 
-        #rospy.loginfo("xmin:{} y xmax:{}".format(xmin,xmax))
-        #rospy.loginfo("Entre")
+        y1 = m[i]*x1 + b[i]
+        y2 = m[i]*x2 + b[i]
 
-        axs.plot(x,y,'r')
-        rospy.loginfo("imprimi")
+
+        axs.plot([x1, x2],[y1,y2],'r')
 
         i = i+1
 
-
-    i = 0
-
-    while i < num:
-        p = obs[i]
-        d = obs[i+1]
-
-        x = math.cos(p+pActual)*d
-        y = math.sin(p+pActual)*d
-
-        #axs.scatter(x+xActual,y+yActual)
-
-        i = i+2
-
-    plt.title('Posicion en tiempo real de Robot')
+    plt.title('Posicion en tiempo real del Robot y lineas detectadas')
     plt.grid()
 
 
