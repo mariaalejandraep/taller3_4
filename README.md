@@ -61,6 +61,24 @@ Dependencias:
 
 Punto 3:
 Primero se debe ejecutar el comando roscore en la linea de comandos y además abrir el simulador vrep. Se puede iniciar la simulacion primero y despues ejecutar el script o ejecutar el script y despues la simulacion. El envio de la velocidad del robot se puede realizar por parametro, sin embargo no es necesario. Si no se envia una velocidad por parametro se utiliza el valor por defecto del codigo. Para el iteral a esta velocidad es de 10, y para el c es de 4.
+
+Se deben ejecutar los siguientes comandos en una terminal para instalar las librerias que se utilizan en los codigos y asi lograr correr los scripts desarrollados.
+
+Instalacion de pynput: Esta es una libreria para detectar las teclas presionadas.
+	Comando: 
+	pip install pynput
+
+Instalacion de numpy: Esta es una libreria utilizada para realizar operaciones sobre vectores.
+	Comandos:
+	sudo apt update
+	sudo apt install python-numpy
+
+	Para Python 3.x
+	sudo apt update
+	sudo apt install python3-numpy
+
+La version de Python se puede verificar con el comando python --version.
+
 A)
 Comando de ejecucion:
 	rosrun taller3_4 punto3a.py [la velocidad del robot]
