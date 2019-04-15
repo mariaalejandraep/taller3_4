@@ -60,7 +60,7 @@ Dependencias:
 	Recordar que para que empiece a avanzar el robot se debe cerrar la primera gráfica que aparece
 
 Punto 3:
-Primero se debe ejecutar el comando roscore en la linea de comandos y además abrir el simulador vrep. Se puede iniciar la simulacion primero y despues ejecutar el script o ejecutar el script y despues la simulacion. El envio de la velocidad del robot se puede realizar por parametro, sin embargo no es necesario. Si no se envia una velocidad por parametro se utiliza el valor por defecto del codigo. Para el iteral a esta velocidad es de 10, y para el c es de 4.
+Primero se debe ejecutar el comando roscore en la linea de comandos y además abrir el simulador vrep. Despue se debe abrir la escena scene_punto3 que se puede encontrar dentro del archivo resources. Se puede iniciar la simulacion primero y despues ejecutar el script o ejecutar el script y despues la simulacion. El envio de la velocidad del robot se puede realizar por parametro, sin embargo no es necesario. Si no se envia una velocidad por parametro se utiliza el valor por defecto del codigo. Para el iteral a esta velocidad es de 10, y para el c es de 4.
 
 Se deben ejecutar los siguientes comandos en una terminal para instalar las librerias que se utilizan en los codigos y asi lograr correr los scripts desarrollados.
 
@@ -115,5 +115,5 @@ Dependencias:
 	from geometry_msgs.msg import Twist
 	from std_msgs.msg import Float32MultiArray
 
-Al correr alguno de los comandos anteriores e iniciar la simulacion se abrira una grafica en donde se representa al robot como un punto de color azul y a los obstaculos (ya sea como puntos crudos o lineas, dependiendo del iteral que se corra) de color rojo. El robot se puede mover con las flechas del teclado.
+Al correr alguno de los comandos anteriores e iniciar la simulacion se abrira una grafica en donde se representa al robot como un punto de color azul y a los obstaculos (ya sea como puntos crudos o lineas, dependiendo del iteral que se corra) de color rojo. El robot se puede mover con las flechas del teclado, presionando hacia adelante o atras para moverlo en dicha direccion y oprimiendo derecha o izquierda para girar mientras se mueve.
 

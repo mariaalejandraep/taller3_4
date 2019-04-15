@@ -58,7 +58,7 @@ dX = 0
 dY = 0
 teclas = [0,0,0,0]
 v0 = [1,1]
-h = 15
+h = 18
 
 def on_press(key):
     global msg, vel, teclas, v0
