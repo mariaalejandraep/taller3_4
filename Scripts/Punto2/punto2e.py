@@ -41,7 +41,7 @@ casillas=[]
 # Posicion actual del robot, debe actualizarse por el topico
 posicionActual=Posicion(0,0,0)
 # Posicion final del robot, inicialmente se toma como la cuadricula superior derecha con angulos
-posicionFinal=Posicion(10-distanciaCuadricula/2,10-distanciaCuadricula/2,math.pi/2)
+posicionFinal=Posicion(40-distanciaCuadricula/2,40-distanciaCuadricula/2,math.pi/2)
 #Es el diametro de la rueda del Pioneer 3dx en metros.
 diametroRueda = 195.3/1000#metros
 #Es el radio de la rueda del Pioneer 3dx en metros.
