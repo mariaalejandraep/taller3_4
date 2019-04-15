@@ -2,8 +2,6 @@
 import rospy
 import threading
 import sys
-import time
-import os
 from pynput.keyboard import Key, Listener
 from std_msgs.msg import Float32MultiArray
 from geometry_msgs.msg import Twist
