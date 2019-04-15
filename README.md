@@ -1,11 +1,32 @@
 # taller3_4
+# en caso de encontrar algun problema con el archivo zip el paquete se puede clonar de github con la siguiente direccion: https://github.com/mariaalejandraep/taller3_4.git
+
 Punto 1:
 A) comando de ejecución:
+Primero se debe iniciar el mapa mediumCorners con el siguiente comando:
+rosrun pacman pacman_world --c mediumCorners
+despues se debe iniciar el nodo con el siguiente comando:
 rosrun taller3_4 punto1a.py
-C) comando de ejecución
-rosrun taller3_4 punto1c.py
 
+dependencias:
+	import rospy
+	import numpy as np
+	import time
+
+C) comando de ejecución
+Primero se debe iniciar el mapacon el siguiente comando:
+rosrun pacman pacman_world --c [nombre del mapa]
+ej: rosrun pacman pacman_world --c bigCorners
+despues se debe iniciar el nodo con el siguiente comando:
+rosrun taller3_4 punto1c.py
+dependencias:
+	import rospy
+	import numpy as np
 Punto 2:
+Primero se debe instalar la herramienta networkx con el siguiente comando:
+pip install --user networkx
+o siguiendo las instrucciones en esta pagina:
+https://networkx.github.io/documentation/stable/install.html
 Cabe que vrep debe estar corriendo al igual que roscore. Se debe escoger como escena scene_punto2_1piso.ttt, puede ejecutar el código o la simulación primero.
 A)
 Comando de ejecución:
