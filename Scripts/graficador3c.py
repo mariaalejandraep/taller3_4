@@ -1,24 +1,30 @@
 #!/usr/bin/env python
+#Las librerias que se importan.
 import rospy
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Float32MultiArray
 
+#Son las variables asociadas a la ventana emergente para graficar.
 fig = None
 axs = None
+ani = None
+
+#Son las variables donde se almacena la posicion actual del robot.
 xActual = 0
 yActual = 0
 
+#Es el numero de rectas-
 numRectas = 0
 
+#Son los vectores donde se almacenanas los parametros de cada recta.
 m = []
 b = []
 xmin = []
 xmax = []
 
-ani = None
-
+#Este metodo inicializa el nodo graficador.
 def graficar():
     global fig, xCord, axs, ani, xmin, xmax
     fig = plt.figure()
@@ -29,6 +35,7 @@ def graficar():
     ani = animation.FuncAnimation(fig, animate)
     plt.show()
 
+#Este metodo actualiza las variables m,b,xmin,xmax con los valores del topico rectas.
 def ponerRectas(rectas):
     global num, numRectas, obs, m, b, xmin, xmax
 
@@ -48,11 +55,13 @@ def ponerRectas(rectas):
         xmax.append(rectas.data[i+3])
         i = i+4
 
+#Este metodo actualiza la posicion actual del robot.
 def setNewPosition(pos):
     global xActual, yActual
     xActual = pos.linear.x
     yActual = pos.linear.y
 
+#Este metodo grafica las rectas en rojo y la posicion actual del robot.
 def animate(i):
     global axs, m, b, xmin, xmax, xActual, yActual
 

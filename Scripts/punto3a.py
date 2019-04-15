@@ -1,28 +1,27 @@
 #!/usr/bin/env python
+#Las librerias que se importan
 import rospy
 import threading
 import sys
 from pynput.keyboard import Key, Listener
 from std_msgs.msg import Float32MultiArray
 from geometry_msgs.msg import Twist
-
-#las que se importan para este
 import roslaunch
 
+#Es la variable donde se almacena la velocidad de los motores. 10 es el valor por defecto si no se ingresa un parametro.
 vel = 10
+
+#Es la variable donde se almacena la velocidad de cada motor que se va a publicar en el topico motorsVel.
 msg = Float32MultiArray()
 msg.data = [0, 0]
-twistInfo = Twist()
-fig = None
-axs = None
-xCord = []
-yCord = []
-terminate = False
 
-
+#Es la variable donde se almacenan las teclas presionadas. En orden corresponden a : arriba, abajo, derecha, izquierda
 teclas = [0,0,0,0]
+
+#Es la variable que indica la proporcion de la variable vel que se le asigna a cada motor.
 v0 = [1,1]
 
+#En este metodo se detecta la tecla presionada y se actualiza la variable teclas.
 def on_press(key):
     global msg, vel, teclas, v0
 
@@ -36,6 +35,7 @@ def on_press(key):
     if key == Key.left:
         teclas[3] = 1
 
+#En este metodo se detecta la tecla que se suelta y se actualiza la varibale teclas.
 def on_release(key):
     global msg, vel, teclas, v0
     if key == Key.up:
@@ -47,10 +47,12 @@ def on_release(key):
     if key == Key.left:
         teclas[3] = 0
 
+#En este metodo se inicializa el listener del hilo.
 def ThreadInputs():
     with Listener(on_press=on_press, on_release=on_release) as listener:
         listener.join()
 
+#En este metodo se definen las velocidades de cada motor de acuerdo con las teclas presionadas.
 def definirMovimiento():
     global vel, v0, teclas, msg
 
@@ -80,15 +82,13 @@ def definirMovimiento():
 
     msg.data = [v0[0]*vel, v0[1]*vel]
 
+#En este metodo se inicializa el nodo y se publica en el topico motorsVel la velocidad de cada motor.
 def robot_controller():
     global msg, twistInfo
     rospy.init_node('robot_controller', anonymous=True)
-    rospy.Subscriber('pioneerPosition', Twist, setPositionCallback)
     pub = rospy.Publisher('motorsVel', Float32MultiArray, queue_size=10)
-    #pubPosicion = rospy.Publisher('topico_Posicion', Twist, queue_size=10)
     threading.Thread(target=ThreadInputs).start()
     rate = rospy.Rate(18)
-    contador = 0
 
     package = 'taller3_4'
     script = 'graficador3a.py'
@@ -101,17 +101,9 @@ def robot_controller():
     while not rospy.is_shutdown():
         definirMovimiento()
         pub.publish(msg)
-        # contador = contador + 1
-        # if contador == 3:
-        #     #pubPosicion.publish(twistInfo)
-        #     contador = 0
         rate.sleep()
 
-
-def setPositionCallback(pos):
-    global twistInfo
-    twistInfo = pos
-
+#Este metodo llama al metodo que inicializa el nodo y ademas verifica si se ingreso un parametro. Si se ingresa, lo asigna como la velocidad.
 if __name__ == '__main__':
     try:
         if len(sys.argv) > 1:
