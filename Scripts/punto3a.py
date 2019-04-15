@@ -85,9 +85,9 @@ def robot_controller():
     rospy.init_node('robot_controller', anonymous=True)
     rospy.Subscriber('pioneerPosition', Twist, setPositionCallback)
     pub = rospy.Publisher('motorsVel', Float32MultiArray, queue_size=10)
-    pubPosicion = rospy.Publisher('topico_Posicion', Twist, queue_size=10)
+    #pubPosicion = rospy.Publisher('topico_Posicion', Twist, queue_size=10)
     threading.Thread(target=ThreadInputs).start()
-    rate = rospy.Rate(15)
+    rate = rospy.Rate(18)
     contador = 0
 
     package = 'taller3_4'
@@ -101,10 +101,10 @@ def robot_controller():
     while not rospy.is_shutdown():
         definirMovimiento()
         pub.publish(msg)
-        contador = contador + 1
-        if contador == 3:
-            pubPosicion.publish(twistInfo)
-            contador = 0
+        # contador = contador + 1
+        # if contador == 3:
+        #     #pubPosicion.publish(twistInfo)
+        #     contador = 0
         rate.sleep()
 
 

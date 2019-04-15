@@ -23,7 +23,7 @@ def graficar():
     fig = plt.figure()
     axs = fig.add_subplot(111)
     rospy.init_node('graficador3a', anonymous=True)
-    rospy.Subscriber('topico_Posicion', Twist, setNewPosition)
+    rospy.Subscriber('pioneerPosition', Twist, setNewPosition)
     rospy.Subscriber('scanner', Float32MultiArray, setObstacles)
     ani = animation.FuncAnimation(fig, animate)
     plt.show()
