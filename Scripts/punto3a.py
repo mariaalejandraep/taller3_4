@@ -89,7 +89,7 @@ def robot_controller():
     pub = rospy.Publisher('motorsVel', Float32MultiArray, queue_size=10)
     pubPosicion = rospy.Publisher('topico_Posicion', Twist, queue_size=10)
     threading.Thread(target=ThreadInputs).start()
-    rate = rospy.Rate(10)
+    rate = rospy.Rate(15)
     contador = 0
 
     package = 'taller3_4'
